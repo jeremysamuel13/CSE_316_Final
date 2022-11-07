@@ -278,6 +278,7 @@ function GlobalStoreContextProvider(props) {
 
   // THIS FUNCTION CREATES A NEW LIST
   store.createNewList = async function () {
+    store.closeCurrentList();
     let newListName = "Untitled" + store.newListCounter;
     const response = await api.createPlaylist(newListName, [], auth.user.email);
     console.log("createNewList response: " + response);
@@ -338,7 +339,7 @@ function GlobalStoreContextProvider(props) {
         history.push("/");
       }
     }
-    processDelete(id).then(() => console.log("DELETED"));
+    processDelete(id);
   };
   store.deleteMarkedList = function () {
     store.deleteList(store.listIdMarkedForDeletion);
@@ -387,6 +388,7 @@ function GlobalStoreContextProvider(props) {
   // FUNCTIONS ARE setCurrentList, addMoveItemTransaction, addUpdateItemTransaction,
   // moveItem, updateItem, updateCurrentList, undo, and redo
   store.setCurrentList = function (id) {
+    store.closeCurrentList();
     async function asyncSetCurrentList(id) {
       let response = await api.getPlaylistById(id);
       if (response.data.success) {
