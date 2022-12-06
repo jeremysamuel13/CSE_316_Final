@@ -13,6 +13,7 @@ export const AuthActionType = {
   REGISTER_USER: "REGISTER_USER",
   SET_ERROR: "SET_ERROR",
   CLEAR_ERROR: "CLEAR_ERROR",
+  SET_LOGGED_IN: "SET_LOGGED_IN",
 };
 
 function AuthContextProvider(props) {
@@ -64,6 +65,9 @@ function AuthContextProvider(props) {
       case AuthActionType.CLEAR_ERROR: {
         return setAuth((auth) => ({ ...auth, error: null }));
       }
+      case AuthActionType.SET_LOGGED_IN: {
+        return setAuth(() => ({ ...auth, ...payload }));
+      }
       default:
         return auth;
     }
@@ -71,6 +75,7 @@ function AuthContextProvider(props) {
 
   auth.getLoggedIn = async function () {
     const response = await api.getLoggedIn();
+    console.log(response);
     if (response.status === 200) {
       authReducer({
         type: AuthActionType.SET_LOGGED_IN,

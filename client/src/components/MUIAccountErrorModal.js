@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Box } from "@mui/material";
+import { Alert, Modal, Box } from "@mui/material";
 import React, { useContext } from "react";
 import AuthContext from "../auth";
 

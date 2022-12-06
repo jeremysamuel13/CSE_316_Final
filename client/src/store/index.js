@@ -267,12 +267,14 @@ function GlobalStoreContextProvider(props) {
   };
 
   // THIS FUNCTION PROCESSES CLOSING THE CURRENTLY LOADED LIST
-  store.closeCurrentList = function () {
+  store.closeCurrentList = function (fromURL) {
     storeReducer({
       type: GlobalStoreActionType.CLOSE_CURRENT_LIST,
       payload: {},
     });
-    history.push("/");
+    if (!fromURL) {
+      history.push("/");
+    }
     tps.clearAllTransactions();
   };
 
@@ -387,8 +389,8 @@ function GlobalStoreContextProvider(props) {
   // OF A LIST, WHICH INCLUDES DEALING WITH THE TRANSACTION STACK. THE
   // FUNCTIONS ARE setCurrentList, addMoveItemTransaction, addUpdateItemTransaction,
   // moveItem, updateItem, updateCurrentList, undo, and redo
-  store.setCurrentList = function (id) {
-    store.closeCurrentList();
+  store.setCurrentList = function (id, fromURL) {
+    store.closeCurrentList(fromURL);
     async function asyncSetCurrentList(id) {
       let response = await api.getPlaylistById(id);
       if (response.data.success) {
