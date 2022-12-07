@@ -35,6 +35,7 @@ export const GlobalStoreActionType = {
   HIDE_MODALS: "HIDE_MODALS",
   SET_CURRENT_SONG: "SET_CURRENT_SONG",
   SET_PUBLISHED: "SET_PUBLISHED",
+  DUPLICATE_PLAYLIST: "DUPLICATE_PLAYLIST",
 };
 
 export const SortType = {
@@ -53,6 +54,7 @@ const CurrentModal = {
   DELETE_LIST: "DELETE_LIST",
   EDIT_SONG: "EDIT_SONG",
   REMOVE_SONG: "REMOVE_SONG",
+  DUPLICATE_PLAYLIST: "DUPLICATE_PLAYLIST",
 };
 
 // WITH THIS WE'RE MAKING OUR GLOBAL DATA STORE
@@ -65,7 +67,6 @@ function GlobalStoreContextProvider(props) {
     currentList: null,
     currentSongIndex: -1,
     currentSong: null,
-    newListCounter: 0,
     listNameActive: false,
     listIdMarkedForDeletion: null,
     listMarkedForDeletion: null,
@@ -120,7 +121,6 @@ function GlobalStoreContextProvider(props) {
           currentList: payload,
           currentSongIndex: -1,
           currentSong: null,
-          newListCounter: st.newListCounter + 1,
           listNameActive: false,
           listIdMarkedForDeletion: null,
           listMarkedForDeletion: null,
@@ -233,6 +233,12 @@ function GlobalStoreContextProvider(props) {
       case GlobalStoreActionType.SET_PUBLISHED: {
         return setStore((st) => ({ ...st, published: payload }));
       }
+      case GlobalStoreActionType.DUPLICATE_PLAYLIST: {
+        return setStore((st) => ({
+          ...st,
+          currentModal: CurrentModal.DUPLICATE_PLAYLIST,
+        }));
+      }
       default:
         return store;
     }
@@ -285,14 +291,29 @@ function GlobalStoreContextProvider(props) {
   };
 
   // THIS FUNCTION CREATES A NEW LIST
-  store.createNewList = async function () {
+  store.createNewList = async function (body) {
     store.closeCurrentList();
-    let newListName = "Untitled" + store.newListCounter;
-    const response = await api.createPlaylist(newListName, [], auth.user.email);
-    console.log("createNewList response: " + response);
-    if (response.status === 201) {
+    let newListName = body?.name ?? "Untitled" + (store.idNamePairs.length + 1);
+    const res = await api.createPlaylist({
+      ...body,
+      name: newListName,
+      songs: [],
+      ownerEmail: auth.user.email,
+    });
+    console.log("createNewList response: " + res);
+    if (res.status === 201) {
       tps.clearAllTransactions();
-      let newList = response.data.playlist;
+      let newList = res.data.playlist;
+      const response = await api.getPlaylistPairs();
+      if (response.data.success) {
+        let pairsArray = response.data.idNamePairs;
+        storeReducer({
+          type: GlobalStoreActionType.LOAD_ID_NAME_PAIRS,
+          payload: pairsArray,
+        });
+      } else {
+        console.log("API FAILED TO GET THE LIST PAIRS");
+      }
       storeReducer({
         type: GlobalStoreActionType.CREATE_NEW_LIST,
         payload: newList,
@@ -628,16 +649,38 @@ function GlobalStoreContextProvider(props) {
     });
   };
 
-  store.loadPublishedPlaylists = () => {
-    api.getPublishedPlaylists().then(({ data }) => {
-      if (data.success) {
-        storeReducer({
-          type: GlobalStoreActionType.LOAD_PUBLISHED_PLAYLISTS,
-          payload: data.data,
-        });
-      } else {
-        console.log("error loading published playlists");
-      }
+  store.loadPublishedPlaylists = async () => {
+    const res = await api.getPublishedPlaylists();
+
+    if (res.data?.success) {
+      storeReducer({
+        type: GlobalStoreActionType.LOAD_PUBLISHED_PLAYLISTS,
+        payload: res.data.data,
+      });
+    } else {
+      console.log("error loading published playlists");
+    }
+  };
+
+  store.publishList = async (id) => {
+    const res = await api.publishPlaylist(id);
+
+    console.log(res);
+    if (res.data?.success) {
+      history.push("/published");
+      store.loadPublishedPlaylists();
+      storeReducer({
+        type: GlobalStoreActionType.SET_CURRENT_LIST,
+        payload: res.data.data,
+      });
+    } else {
+      console.log("error loading published playlists");
+    }
+  };
+
+  store.duplicatePlaylist = async (id) => {
+    storeReducer({
+      type: GlobalStoreActionType.DUPLICATE_PLAYLIST,
     });
   };
 

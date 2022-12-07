@@ -29,7 +29,7 @@ function WorkspaceScreen() {
   return (
     <Box>
       <List id="playlist-cards" sx={{ width: "100%", margin: "2%" }}>
-        {store.currentList?.songs.map((song, index) => (
+        {store.currentList?.songs?.map((song, index) => (
           <SongCard
             id={"playlist-song-" + index}
             key={"playlist-song-" + index}

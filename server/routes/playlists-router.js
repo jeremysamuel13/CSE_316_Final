@@ -19,7 +19,7 @@ router.get("/playlists", auth.verify, PlaylistController.getPlaylists);
 
 router.post("/playlist", auth.verify, PlaylistController.createPlaylist);
 
-router.get("/published", auth.verify, PlaylistController.getPublishedPlaylists);
+router.get("/published", PlaylistController.getPublishedPlaylists);
 
 router.put("/published/:id", auth.verify, PlaylistController.publishPlaylist);
 router.post(
@@ -33,6 +33,6 @@ router.put(
   PlaylistController.dislikePlaylist
 );
 router.put("/published/:id/like", auth.verify, PlaylistController.likePlaylist);
-router.post("/published/:id/listen", auth.verify, PlaylistController.listen);
+router.post("/published/:id/listen", PlaylistController.listen);
 
 module.exports = router;

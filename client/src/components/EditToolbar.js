@@ -80,7 +80,7 @@ function EditToolbar() {
             <ContentCopyRoundedIcon />
           </Button>
           <Button
-            disabled={store.currentList || store.published}
+            disabled={!!(store.currentList || store.published)}
             variant="contained"
             onClick={handleCreateNewList}
           >

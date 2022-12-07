@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import WorkspaceScreen from "./WorkspaceScreen";
+import PublishIcon from "@mui/icons-material/Publish";
 
 /*
     This is a card in our list of top 5 lists. It lets select
@@ -42,7 +43,7 @@ function ListCard(props) {
     setEditActive(newActive);
   }
 
-  async function handleDeleteList(event, id) {
+  function handleDeleteList(event, id) {
     event.stopPropagation();
     // let _id = event.target.id;
     // _id = ("" + _id).substring("delete-list-".length);
@@ -66,6 +67,10 @@ function ListCard(props) {
     } else {
       store.closeCurrentList();
     }
+  };
+
+  const handlePublishList = () => {
+    store.publishList(idNamePair._id);
   };
 
   if (editActive) {
@@ -107,6 +112,11 @@ function ListCard(props) {
             aria-label="delete"
           >
             <DeleteIcon style={{ fontSize: "16pt" }} />
+          </IconButton>
+        </Box>
+        <Box sx={{ p: 1 }}>
+          <IconButton onClick={(event) => handlePublishList(event)}>
+            <PublishIcon style={{ fontSize: "16pt" }} />
           </IconButton>
         </Box>
         <Box sx={{ p: 1 }}>
