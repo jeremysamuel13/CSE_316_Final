@@ -1,3 +1,4 @@
+const auth = require("../auth");
 const Playlist = require("../models/playlist-model");
 const User = require("../models/user-model");
 /*
@@ -96,6 +97,8 @@ getPlaylistById = async (req, res) => {
           ...list._doc,
           likes: list.likes.length,
           dislikes: list.dislikes.length,
+          hasLiked: list.likes.includes(req.userId),
+          hasDisliked: list.dislikes.includes(req.userId),
           comments: list.comments.map((c) => ({
             ...c._doc,
             user: { firstName: c.user.firstName, lastName: c.user.lastName },
@@ -132,10 +135,24 @@ getPlaylistPairs = async (req, res) => {
           let pairs = [];
           for (let key in playlists) {
             let list = playlists[key];
-            let pair = {
-              _id: list._id,
-              name: list.name,
-            };
+            let pair = list.isPublished
+              ? {
+                  likes: list.likes.length,
+                  dislikes: list.dislikes.length,
+                  name: list.name,
+                  _id: list._id,
+                  publishDate: list.publishDate,
+                  listens: list.listens,
+                  isPublished: list.isPublished,
+                  firstName: list.user.firstName,
+                  lastName: list.user.lastName,
+                  hasLiked: list.likes.includes(req.userId),
+                  hasDisliked: list.dislikes.includes(req.userId),
+                }
+              : {
+                  _id: list._id,
+                  name: list.name,
+                };
             pairs.push(pair);
           }
           return res.status(200).json({ success: true, idNamePairs: pairs });
@@ -158,6 +175,8 @@ getPlaylists = async (req, res) => {
       ...pl,
       likes: likes.length,
       dislikes: dislikes.length,
+      hasLiked: likes.includes(req.userId),
+      hasDisliked: dislikes.includes(req.userId),
       comments: comments.map((c) => ({
         ...c._doc,
         user: { firstName: c.user.firstName, lastName: c.user.lastName },
@@ -236,16 +255,35 @@ const getPublishedPlaylists = async (req, res) => {
       .json({ success: false, error: "Playlists not found" });
   }
 
+  const userId = auth.verifyUser(req);
+
   const mapped = playlists.map(
-    ({ likes, dislikes, name, _id, publishDate, listens, user }) => ({
+    ({
+      likes,
+      dislikes,
+      name,
+      _id,
+      publishDate,
+      listens,
+      user,
+      isPublished,
+      comments,
+    }) => ({
       likes: likes.length,
       dislikes: dislikes.length,
       name,
       _id,
       publishDate,
       listens,
+      isPublished,
+      hasLiked: userId ? likes.includes(userId) : undefined,
+      hasDisliked: userId ? dislikes.includes(userId) : undefined,
       firstName: user.firstName,
       lastName: user.lastName,
+      comments: comments.map((c) => ({
+        ...c._doc,
+        user: { firstName: c.user.firstName, lastName: c.user.lastName },
+      })),
     })
   );
 
@@ -265,21 +303,33 @@ const addComment = async (req, res) => {
     });
   }
 
-  const user = await User.findById(req.userId);
+  const cl = await User.findById(req.userId);
 
-  const playlist = await Playlist.findByIdAndUpdate(id, {
-    $push: {
-      comments: { comment, user },
+  const playlist = await Playlist.findByIdAndUpdate(
+    id,
+    {
+      $push: {
+        comments: { comment, user: cl },
+      },
     },
-  });
+    { new: true }
+  );
 
   if (!playlist) {
     return res
       .status(404)
       .json({ success: false, description: "playlist not found" });
-  } else {
-    return res.status(200).json({ success: true });
   }
+
+  const c = playlist.comments.at(-1);
+
+  return res.status(200).json({
+    success: true,
+    data: {
+      ...c._doc,
+      user: { firstName: cl.firstName, lastName: cl.lastName },
+    },
+  });
 };
 
 const publishPlaylist = async (req, res) => {
@@ -322,7 +372,16 @@ const publishPlaylist = async (req, res) => {
 
   console.log("set published");
 
-  const { likes, dislikes, name, _id, publishDate, listens, user } = playlist;
+  const {
+    likes,
+    dislikes,
+    name,
+    _id,
+    publishDate,
+    listens,
+    user,
+    isPublished,
+  } = playlist;
 
   return res.status(200).json({
     success: true,
@@ -333,6 +392,9 @@ const publishPlaylist = async (req, res) => {
       _id,
       publishDate,
       listens,
+      isPublished,
+      hasLiked: likes.includes(req.userId),
+      hasDisliked: dislikes.includes(req.userId),
       firstName: user.firstName,
       lastName: user.lastName,
     },
@@ -363,14 +425,39 @@ const likePlaylist = async (req, res) => {
       .json({ success: false, description: "playlist already published" });
   }
 
-  const user = await User.findById(req.userId);
+  const cl = await User.findById(req.userId);
 
-  !playlist.likes.includes(user) && playlist.likes.push(user);
-  playlist.dislikes = playlist.dislikes.filter((x) => x === user._id);
+  !playlist.likes.includes(cl) && playlist.likes.push(cl);
+  playlist.dislikes = playlist.dislikes.filter((x) => x === cl._id);
 
   await playlist.save();
 
-  return res.status(200).json({ success: true });
+  const {
+    likes,
+    dislikes,
+    name,
+    _id,
+    publishDate,
+    listens,
+    user,
+    isPublished,
+  } = playlist;
+  return res.status(200).json({
+    success: true,
+    data: {
+      likes: likes.length,
+      dislikes: dislikes.length,
+      name,
+      _id,
+      publishDate,
+      listens,
+      isPublished,
+      hasLiked: likes.includes(req.userId),
+      hasDisliked: dislikes.includes(req.userId),
+      firstName: user.firstName,
+      lastName: user.lastName,
+    },
+  });
 };
 
 const dislikePlaylist = async (req, res) => {
@@ -397,14 +484,38 @@ const dislikePlaylist = async (req, res) => {
       .json({ success: false, description: "playlist already published" });
   }
 
-  const user = await User.findById(req.userId);
+  const cl = await User.findById(req.userId);
 
-  !playlist.dislikes.includes(user) && playlist.dislikes.push(user);
-  playlist.likes = playlist.likes.filter((x) => x === user._id);
+  !playlist.dislikes.includes(cl) && playlist.dislikes.push(cl);
+  playlist.likes = playlist.likes.filter((x) => x === cl._id);
 
   await playlist.save();
-
-  return res.status(200).json({ success: true });
+  const {
+    likes,
+    dislikes,
+    name,
+    _id,
+    publishDate,
+    listens,
+    user,
+    isPublished,
+  } = playlist;
+  return res.status(200).json({
+    success: true,
+    data: {
+      likes: likes.length,
+      dislikes: dislikes.length,
+      name,
+      _id,
+      publishDate,
+      listens,
+      isPublished,
+      hasLiked: likes.includes(req.userId),
+      hasDisliked: dislikes.includes(req.userId),
+      firstName: user.firstName,
+      lastName: user.lastName,
+    },
+  });
 };
 
 const listen = async (req, res) => {
@@ -435,7 +546,32 @@ const listen = async (req, res) => {
 
   await playlist.save();
 
-  return res.status(200).json({ success: true });
+  const {
+    likes,
+    dislikes,
+    name,
+    _id,
+    publishDate,
+    listens,
+    user,
+    isPublished,
+  } = playlist;
+  return res.status(200).json({
+    success: true,
+    data: {
+      likes: likes.length,
+      dislikes: dislikes.length,
+      name,
+      _id,
+      publishDate,
+      listens,
+      isPublished,
+      hasLiked: likes.includes(req.userId),
+      hasDisliked: dislikes.includes(req.userId),
+      firstName: user.firstName,
+      lastName: user.lastName,
+    },
+  });
 };
 
 module.exports = {

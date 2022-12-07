@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import WorkspaceScreen from "./WorkspaceScreen";
 import PublishIcon from "@mui/icons-material/Publish";
+import PublishedListCard from "./PublishedListCard";
 
 /*
     This is a card in our list of top 5 lists. It lets select
@@ -72,6 +73,10 @@ function ListCard(props) {
   const handlePublishList = () => {
     store.publishList(idNamePair._id);
   };
+
+  if (idNamePair.isPublished) {
+    return <PublishedListCard expanded={expanded} playlist={idNamePair} />;
+  }
 
   if (editActive) {
     return (

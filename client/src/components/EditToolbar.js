@@ -8,6 +8,7 @@ import CloseIcon from "@mui/icons-material/HighlightOff";
 import PlaylistAddCheckRoundedIcon from "@mui/icons-material/PlaylistAddCheckRounded";
 import { Stack, Toolbar, Typography } from "@mui/material";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
+import MUIDuplicatePlaylistModal from "./MUIDuplicatePlaylistModal";
 /*
     This toolbar is a functional React component that
     manages the undo/redo/close buttons.
@@ -32,7 +33,9 @@ function EditToolbar() {
   function handleCreateNewList() {
     store.createNewList();
   }
-  const handleDuplicateList = () => {};
+  const handleDuplicateList = () => {
+    store.duplicatePlaylist();
+  };
 
   return (
     <Stack direction={"row"} display="flex" justifyContent="center">
@@ -97,6 +100,7 @@ function EditToolbar() {
         </Toolbar>
         <Typography variant="button">Playlists</Typography>
       </Stack>
+      <MUIDuplicatePlaylistModal />
     </Stack>
   );
 }

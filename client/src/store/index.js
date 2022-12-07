@@ -36,6 +36,7 @@ export const GlobalStoreActionType = {
   SET_CURRENT_SONG: "SET_CURRENT_SONG",
   SET_PUBLISHED: "SET_PUBLISHED",
   DUPLICATE_PLAYLIST: "DUPLICATE_PLAYLIST",
+  SYNC_LOCAL_CHANGE: "SYNC_LOCAL_CHANGE",
 };
 
 export const SortType = {
@@ -239,6 +240,9 @@ function GlobalStoreContextProvider(props) {
           currentModal: CurrentModal.DUPLICATE_PLAYLIST,
         }));
       }
+      case GlobalStoreActionType.SYNC_LOCAL_CHANGE: {
+        return setStore((st) => ({ ...st }));
+      }
       default:
         return store;
     }
@@ -297,7 +301,7 @@ function GlobalStoreContextProvider(props) {
     const res = await api.createPlaylist({
       ...body,
       name: newListName,
-      songs: [],
+      songs: body?.songs ?? [],
       ownerEmail: auth.user.email,
     });
     console.log("createNewList response: " + res);
@@ -406,6 +410,10 @@ function GlobalStoreContextProvider(props) {
   };
   store.isRemoveSongModalOpen = () => {
     return store.currentModal === CurrentModal.REMOVE_SONG;
+  };
+
+  store.isDuplicateListModal = () => {
+    return store.currentModal === CurrentModal.DUPLICATE_PLAYLIST;
   };
 
   // THE FOLLOWING 8 FUNCTIONS ARE FOR COORDINATING THE UPDATING
@@ -682,6 +690,25 @@ function GlobalStoreContextProvider(props) {
     storeReducer({
       type: GlobalStoreActionType.DUPLICATE_PLAYLIST,
     });
+  };
+
+  store.likePlaylist = async (id) => {
+    const res = await api.like(id);
+    if (!res.data?.success) {
+      return false;
+    }
+  };
+
+  store.dislikePlaylist = async (id) => {
+    const res = await api.dislike(id);
+    if (!res.data?.success) {
+      return false;
+    }
+  };
+
+  store.addComment = async (id, comment) => {
+    const res = await api.comment(id, comment);
+    return res.data?.data;
   };
 
   return (

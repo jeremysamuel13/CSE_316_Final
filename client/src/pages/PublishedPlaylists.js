@@ -6,6 +6,7 @@ import List from "@mui/material/List";
 import EditToolbar from "../components/EditToolbar";
 import { Paper, Stack } from "@mui/material";
 import PublishedListCard from "../components/PublishedListCard";
+import MUIDuplicatePlaylistModal from "../components/MUIDuplicatePlaylistModal";
 /*
     This React component lists all the top5 lists in the UI.
     
@@ -23,8 +24,15 @@ const PublishedPlaylists = () => {
 
   return (
     <Stack>
-      <Paper style={{ maxHeight: "70vh", overflow: "auto" }}>
-        <List sx={{ margin: "0px 20px", bgcolor: "background.paper" }}>
+      <Paper>
+        <List
+          sx={{
+            maxHeight: "65vh",
+            overflow: "auto",
+            margin: "0px 20px",
+            bgcolor: "background.paper",
+          }}
+        >
           {store?.publishedPlaylists?.map((pl) => (
             <PublishedListCard
               key={pl._id}

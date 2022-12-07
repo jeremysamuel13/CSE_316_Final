@@ -6,10 +6,14 @@ import { Box } from "@mui/system";
 import React, { useState } from "react";
 import { YoutubePlayer } from "./YoutubePlayer";
 import Comments from "./Comments";
+import { Typography } from "@mui/material";
+import GlobalStoreContext from "../store";
+import { useContext } from "react";
 
 const SidePanel = () => {
-  const [tab, setTab] = useState("0");
+  const { store } = useContext(GlobalStoreContext);
 
+  const [tab, setTab] = useState("0");
   const onChange = (event, newTab) => setTab(newTab);
 
   return (
@@ -18,15 +22,19 @@ const SidePanel = () => {
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <TabList onChange={onChange} centered>
             <Tab label="Youtube Player" value="0" />
-            <Tab label="Comments" value="1" />
+            <Tab
+              label="Comments"
+              value="1"
+              disabled={!store.currentList?.isPublished}
+            />
           </TabList>
         </Box>
-        <TabPanel value="0">
+        <Typography component={"span"} hidden={tab !== "0"}>
           <YoutubePlayer />
-        </TabPanel>
-        <TabPanel value="1">
+        </Typography>
+        <Typography component={"span"} hidden={tab !== "1"}>
           <Comments />
-        </TabPanel>
+        </Typography>
       </TabContext>
     </Box>
   );
