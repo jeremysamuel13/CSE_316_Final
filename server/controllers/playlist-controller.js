@@ -78,30 +78,36 @@ deletePlaylist = async (req, res) => {
 getPlaylistById = async (req, res) => {
   console.log("Find Playlist with id: " + JSON.stringify(req.params.id));
 
-  await Playlist.findById({ _id: req.params.id }, (err, list) => {
-    if (err) {
-      return res.status(400).json({ success: false, error: err });
-    }
-    console.log("Found list: " + JSON.stringify(list));
+  const list = await Playlist.findById({ _id: req.params.id }).populate(
+    "comments.user"
+  );
 
-    // DOES THIS LIST BELONG TO THIS USER?
-    async function asyncFindUser(list) {
-      await User.findOne({ email: list.ownerEmail }, (err, user) => {
-        console.log("user._id: " + user._id);
-        console.log("req.userId: " + req.userId);
-        if (user._id == req.userId) {
-          console.log("correct user!");
-          return res.status(200).json({ success: true, playlist: list });
-        } else {
-          console.log("incorrect user!");
-          return res
-            .status(400)
-            .json({ success: false, description: "authentication error" });
-        }
+  // DOES THIS LIST BELONG TO THIS USER?
+  await User.findOne({ email: list.ownerEmail }, (err, user) => {
+    console.log("user._id: " + user._id);
+    console.log("req.userId: " + req.userId);
+    if (user._id == req.userId) {
+      console.log("correct user!");
+      console.log(list.likes);
+      return res.status(200).json({
+        success: true,
+        playlist: {
+          ...list._doc,
+          likes: list.likes.length,
+          dislikes: list.dislikes.length,
+          comments: list.comments.map((c) => ({
+            ...c._doc,
+            user: { firstName: c.user.firstName, lastName: c.user.lastName },
+          })),
+        },
       });
+    } else {
+      console.log("incorrect user!");
+      return res
+        .status(400)
+        .json({ success: false, description: "authentication error" });
     }
-    asyncFindUser(list);
-  }).catch((err) => console.log(err));
+  });
 };
 getPlaylistPairs = async (req, res) => {
   console.log("getPlaylistPairs");
@@ -139,17 +145,24 @@ getPlaylistPairs = async (req, res) => {
   }).catch((err) => console.log(err));
 };
 getPlaylists = async (req, res) => {
-  await Playlist.find({}, (err, playlists) => {
-    if (err) {
-      return res.status(400).json({ success: false, error: err });
-    }
-    if (!playlists.length) {
-      return res
-        .status(404)
-        .json({ success: false, error: `Playlists not found` });
-    }
-    return res.status(200).json({ success: true, data: playlists });
-  }).catch((err) => console.log(err));
+  const playlists = await Playlist.find({}).populate("comments.user");
+  if (!playlists.length) {
+    return res
+      .status(404)
+      .json({ success: false, error: `Playlists not found` });
+  }
+  return res.status(200).json({
+    success: true,
+    data: playlists.map(({ _doc: { likes, dislikes, comments, ...pl } }) => ({
+      ...pl,
+      likes: likes.length,
+      dislikes: dislikes.length,
+      comments: comments.map((c) => ({
+        ...c._doc,
+        user: { firstName: c.user.firstName, lastName: c.user.lastName },
+      })),
+    })),
+  });
 };
 updatePlaylist = async (req, res) => {
   const body = req.body;
@@ -211,6 +224,194 @@ updatePlaylist = async (req, res) => {
     asyncFindUser(playlist);
   });
 };
+
+const getPublishedPlaylists = async (req, res) => {
+  const playlists = await Playlist.find({ published: true }).populate("user");
+
+  if (!playlists) {
+    console.log("!playlists.length");
+    return res
+      .status(404)
+      .json({ success: false, error: "Playlists not found" });
+  }
+
+  const mapped = playlists.map(
+    ({ likes, dislikes, name, _id, publishDate, listens, user }) => ({
+      likes: likes.length,
+      dislikes: dislikes.length,
+      name,
+      id: _id,
+      publishDate,
+      listens,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    })
+  );
+
+  console.log(`Published playlists: ${mapped}`);
+
+  return res.status(200).json({ success: true, data: mapped });
+};
+
+const addComment = async (req, res) => {
+  const { id } = req.params;
+  const { comment } = req.body;
+
+  if (!comment || !id) {
+    return res.status(400).json({
+      success: false,
+      description: `no ${!comment ? "comment" : "id"} supplied`,
+    });
+  }
+
+  const user = await User.findById(req.userId);
+
+  const playlist = await Playlist.findByIdAndUpdate(id, {
+    $push: {
+      comments: { comment, user },
+    },
+  });
+
+  if (!playlist) {
+    return res
+      .status(404)
+      .json({ success: false, description: "playlist not found" });
+  } else {
+    return res.status(200).json({ success: true });
+  }
+};
+
+const publishPlaylist = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      description: `no id supplied`,
+    });
+  }
+
+  const playlist = await Playlist.findById(id);
+
+  if (!playlist) {
+    return res
+      .status(404)
+      .json({ success: false, description: "playlist not found" });
+  }
+
+  if (playlist.published) {
+    return res
+      .status(409)
+      .json({ success: false, description: "playlist already published" });
+  }
+
+  playlist.published = true;
+  playlist.publishDate = new Date();
+
+  await playlist.save();
+
+  return res.status(200).json({ success: true });
+};
+
+const likePlaylist = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      description: `no id supplied`,
+    });
+  }
+
+  const playlist = await Playlist.findById(id);
+
+  if (!playlist) {
+    return res
+      .status(404)
+      .json({ success: false, description: "playlist not found" });
+  }
+
+  if (!playlist.published) {
+    return res
+      .status(409)
+      .json({ success: false, description: "playlist already published" });
+  }
+
+  const user = await User.findById(req.userId);
+
+  !playlist.likes.includes(user) && playlist.likes.push(user);
+  playlist.dislikes = playlist.dislikes.filter((x) => x === user._id);
+
+  await playlist.save();
+
+  return res.status(200).json({ success: true });
+};
+
+const dislikePlaylist = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      description: `no id supplied`,
+    });
+  }
+
+  const playlist = await Playlist.findById(id);
+
+  if (!playlist) {
+    return res
+      .status(404)
+      .json({ success: false, description: "playlist not found" });
+  }
+
+  if (!playlist.published) {
+    return res
+      .status(409)
+      .json({ success: false, description: "playlist already published" });
+  }
+
+  const user = await User.findById(req.userId);
+
+  !playlist.dislikes.includes(user) && playlist.dislikes.push(user);
+  playlist.likes = playlist.likes.filter((x) => x === user._id);
+
+  await playlist.save();
+
+  return res.status(200).json({ success: true });
+};
+
+const listen = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      description: `no id supplied`,
+    });
+  }
+
+  const playlist = await Playlist.findById(id);
+
+  if (!playlist) {
+    return res
+      .status(404)
+      .json({ success: false, description: "playlist not found" });
+  }
+
+  if (!playlist.published) {
+    return res
+      .status(409)
+      .json({ success: false, description: "playlist already published" });
+  }
+
+  playlist.listens++;
+
+  await playlist.save();
+
+  return res.status(200).json({ success: true });
+};
+
 module.exports = {
   createPlaylist,
   deletePlaylist,
@@ -218,4 +419,10 @@ module.exports = {
   getPlaylistPairs,
   getPlaylists,
   updatePlaylist,
+  getPublishedPlaylists,
+  addComment,
+  publishPlaylist,
+  likePlaylist,
+  dislikePlaylist,
+  listen,
 };

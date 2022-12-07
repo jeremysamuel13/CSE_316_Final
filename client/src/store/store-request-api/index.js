@@ -10,11 +10,11 @@
     @author McKilla Gorilla
 */
 
-import axios from 'axios'
+import axios from "axios";
 axios.defaults.withCredentials = true;
 const api = axios.create({
-    baseURL: 'http://localhost:4000/api',
-})
+  baseURL: "http://localhost:4000/api",
+});
 
 // THESE ARE ALL THE REQUESTS WE`LL BE MAKING, ALL REQUESTS HAVE A
 // REQUEST METHOD (like get) AND PATH (like /top5list). SOME ALSO
@@ -23,29 +23,43 @@ const api = axios.create({
 // WE NEED TO PUT THINGS INTO THE DATABASE OR IF WE HAVE SOME
 // CUSTOM FILTERS FOR QUERIES
 export const createPlaylist = (newListName, newSongs, userEmail) => {
-    return api.post(`/playlist/`, {
-        // SPECIFY THE PAYLOAD
-        name: newListName,
-        songs: newSongs,
-        ownerEmail: userEmail
-    })
-}
-export const deletePlaylistById = (id) => api.delete(`/playlist/${id}`)
-export const getPlaylistById = (id) => api.get(`/playlist/${id}`)
-export const getPlaylistPairs = () => api.get(`/playlistpairs/`)
+  return api.post(`/playlist/`, {
+    // SPECIFY THE PAYLOAD
+    name: newListName,
+    songs: newSongs,
+    ownerEmail: userEmail,
+  });
+};
+export const deletePlaylistById = (id) => api.delete(`/playlist/${id}`);
+export const getPlaylistById = (id) => api.get(`/playlist/${id}`);
+export const getPlaylistPairs = () => api.get(`/playlistpairs/`);
 export const updatePlaylistById = (id, playlist) => {
-    return api.put(`/playlist/${id}`, {
-        // SPECIFY THE PAYLOAD
-        playlist : playlist
-    })
-}
+  return api.put(`/playlist/${id}`, {
+    // SPECIFY THE PAYLOAD
+    playlist: playlist,
+  });
+};
+
+export const getPublishedPlaylists = () => api.get(`/published`);
+export const publishPlaylist = (id) => api.put(`/published/${id}`);
+export const comment = (id, comment) =>
+  api.post(`/published/${id}/comment`, { comment });
+export const like = (id) => api.put(`/published/${id}/like`);
+export const dislike = (id) => api.put(`/published/${id}/dislike`);
+export const listen = (id) => api.put(`/published/${id}/listen`);
 
 const apis = {
-    createPlaylist,
-    deletePlaylistById,
-    getPlaylistById,
-    getPlaylistPairs,
-    updatePlaylistById
-}
+  createPlaylist,
+  deletePlaylistById,
+  getPlaylistById,
+  getPlaylistPairs,
+  updatePlaylistById,
+  getPublishedPlaylists,
+  publishPlaylist,
+  comment,
+  like,
+  dislike,
+  listen,
+};
 
-export default apis
+export default apis;
