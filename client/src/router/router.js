@@ -3,8 +3,9 @@ import { Box } from "@mui/system";
 import { useContext } from "react";
 import { Route } from "react-router-dom";
 import AuthContext from "../auth";
+import { SidePanel } from "../components";
 import SplashScreen from "../components/SplashScreen";
-import { YoutubePlayer } from "../components/YoutubePlayer";
+import { GlobalStoreContext } from "../store";
 
 import {
   UserPlaylists,
@@ -18,31 +19,31 @@ const PATHS = [
     path: "/",
     component: <SplashScreen />,
     allowGuest: true,
-    withPlayer: false,
+    withSidePanel: false,
   },
   {
     path: "/playlists/",
     component: <UserPlaylists />,
     allowGuest: false,
-    withPlayer: true,
+    withSidePanel: true,
   },
   {
     path: "/published/",
     component: <PublishedPlaylists />,
     allowGuest: true,
-    withPlayer: true,
+    withSidePanel: true,
   },
   {
     path: "/login/",
     component: <LoginScreen />,
     allowGuest: true,
-    withPlayer: false,
+    withSidePanel: false,
   },
   {
     path: "/register/",
     component: <RegisterScreen />,
     allowGuest: true,
-    withPlayer: false,
+    withSidePanel: false,
   },
 ];
 
@@ -62,7 +63,7 @@ const HorizontalStack = ({ children }) => {
           alignItems="center"
           justifyContent="center"
         >
-          <YoutubePlayer />
+          <SidePanel />
         </Box>
       </Grid2>
     </Grid2>
@@ -76,7 +77,8 @@ export const Router = () => {
     if (!auth.loggedIn && r.allowGuest === false) {
       return <NotAuthorized key={r.path} />;
     }
-    if (r.withPlayer) {
+
+    if (r.withSidePanel) {
       return (
         <Route path={r.path} exact key={r.path}>
           <HorizontalStack>{r.component}</HorizontalStack>
@@ -85,7 +87,7 @@ export const Router = () => {
     }
 
     return (
-      <Route path={r.path} exactkey={r.path}>
+      <Route path={r.path} exact key={r.path}>
         {r.component}
       </Route>
     );

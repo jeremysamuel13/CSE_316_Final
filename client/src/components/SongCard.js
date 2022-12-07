@@ -1,12 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { GlobalStoreContext } from "../store";
 import ClearIcon from "@mui/icons-material/Clear";
-import { Box, IconButton, Paper, Stack, Typography } from "@mui/material";
+import { IconButton, Paper, Stack, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 
 function SongCard(props) {
   const { store } = useContext(GlobalStoreContext);
-  const [draggedTo, setDraggedTo] = useState(0);
   const { song, index } = props;
 
   function handleDragStart(event) {
@@ -19,19 +18,16 @@ function SongCard(props) {
 
   function handleDragEnter(event) {
     event.preventDefault();
-    setDraggedTo(true);
   }
 
   function handleDragLeave(event) {
     event.preventDefault();
-    setDraggedTo(false);
   }
 
   function handleDrop(event) {
     event.preventDefault();
     let targetIndex = index;
     let sourceIndex = Number(event.dataTransfer.getData("song"));
-    setDraggedTo(false);
 
     // UPDATE THE LIST
     store.addMoveSongTransaction(sourceIndex, targetIndex);
@@ -82,13 +78,11 @@ function SongCard(props) {
             {song.title} by {song.artist}
           </Link>
         </Typography>
-        <IconButton id={"remove-song-" + index} onClick={handleRemoveSong}>
-          <ClearIcon />
-        </IconButton>
-        {/* {index + 1}. */}
-        {/* <a id={"song-" + index + "-link"} className="song-link">
-        {song.title} by {song.artist}
-      </a> */}
+        {!store.published && (
+          <IconButton id={"remove-song-" + index} onClick={handleRemoveSong}>
+            <ClearIcon sx={{ fontSize: "12pt" }} />
+          </IconButton>
+        )}
       </Stack>
     </Paper>
   );

@@ -7,7 +7,6 @@ import {
   Toolbar,
   Typography,
   InputBase,
-  Popover,
   Button,
   Menu,
   MenuItem,

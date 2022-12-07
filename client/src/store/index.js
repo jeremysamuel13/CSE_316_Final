@@ -34,6 +34,7 @@ export const GlobalStoreActionType = {
   REMOVE_SONG: "REMOVE_SONG",
   HIDE_MODALS: "HIDE_MODALS",
   SET_CURRENT_SONG: "SET_CURRENT_SONG",
+  SET_PUBLISHED: "SET_PUBLISHED",
 };
 
 export const SortType = {
@@ -69,6 +70,7 @@ function GlobalStoreContextProvider(props) {
     listIdMarkedForDeletion: null,
     listMarkedForDeletion: null,
     publishedPlaylists: [],
+    published: false,
   });
   const history = useHistory();
 
@@ -228,6 +230,9 @@ function GlobalStoreContextProvider(props) {
       case GlobalStoreActionType.SET_CURRENT_SONG: {
         return setStore((st) => ({ ...st, ...payload }));
       }
+      case GlobalStoreActionType.SET_PUBLISHED: {
+        return setStore((st) => ({ ...st, published: payload }));
+      }
       default:
         return store;
     }
@@ -292,9 +297,6 @@ function GlobalStoreContextProvider(props) {
         type: GlobalStoreActionType.CREATE_NEW_LIST,
         payload: newList,
       });
-
-      // IF IT'S A VALID LIST THEN LET'S START EDITING IT
-      history.push("/playlist/" + newList._id);
     } else {
       console.log("API FAILED TO CREATE A NEW LIST");
     }
@@ -534,7 +536,9 @@ function GlobalStoreContextProvider(props) {
     tps.doTransaction();
   };
   store.canAddNewSong = function () {
-    return store.currentList !== null;
+    return (
+      store.currentList !== null && store.currentList.isPublished === false
+    );
   };
   store.canUndo = function () {
     return store.currentList !== null && tps.hasTransactionToUndo();
@@ -614,6 +618,26 @@ function GlobalStoreContextProvider(props) {
     storeReducer({
       type: GlobalStoreActionType.SET_CURRENT_SONG,
       payload,
+    });
+  };
+
+  store.setPublished = (published) => {
+    storeReducer({
+      type: GlobalStoreActionType.SET_PUBLISHED,
+      payload: published,
+    });
+  };
+
+  store.loadPublishedPlaylists = () => {
+    api.getPublishedPlaylists().then(({ data }) => {
+      if (data.success) {
+        storeReducer({
+          type: GlobalStoreActionType.LOAD_PUBLISHED_PLAYLISTS,
+          payload: data.data,
+        });
+      } else {
+        console.log("error loading published playlists");
+      }
     });
   };
 

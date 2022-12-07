@@ -6,7 +6,6 @@ import {
   CardContent,
   Fade,
   Grid,
-  IconButton,
   Paper,
   Typography,
 } from "@mui/material";
@@ -43,7 +42,7 @@ export const YoutubePlayer = () => {
   const hasPrevious = store.currentSongIndex - 1 > 0;
 
   return (
-    <Grid container style={{ margin: "1%" }}>
+    <Grid container>
       <Grid item xs={12}>
         <Box
           id="yt-player-div"
@@ -101,7 +100,7 @@ export const YoutubePlayer = () => {
           </Button>
         </ButtonGroup>
       </Grid>
-      <Fade in={store.currentSong || store.currentList}>
+      <Fade in={!!(store.currentSong || store.currentList)}>
         <Grid item xs={12} sx={{ margin: "0% 5%" }}>
           <Paper>
             <Card>

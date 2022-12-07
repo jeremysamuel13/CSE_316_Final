@@ -4,18 +4,15 @@ import Box from "@mui/material/Box";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
-import ListItem from "@mui/material/ListItem";
 import TextField from "@mui/material/TextField";
-import { useHistory } from "react-router-dom";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Paper,
   Typography,
 } from "@mui/material";
-import WorkspaceScreen from "../pages/WorkspaceScreen";
+import WorkspaceScreen from "./WorkspaceScreen";
 
 /*
     This is a card in our list of top 5 lists. It lets select
@@ -28,7 +25,7 @@ function ListCard(props) {
   const { store } = useContext(GlobalStoreContext);
   const [editActive, setEditActive] = useState(false);
   const [text, setText] = useState("");
-  const { idNamePair, selected, expanded } = props;
+  const { idNamePair, expanded } = props;
 
   const isPublished = idNamePair.isPublished;
 
@@ -70,15 +67,6 @@ function ListCard(props) {
       store.closeCurrentList();
     }
   };
-
-  let selectClass = "unselected-list-card";
-  if (selected) {
-    selectClass = "selected-list-card";
-  }
-  let cardStatus = false;
-  if (store.isListNameEditActive) {
-    cardStatus = true;
-  }
 
   if (editActive) {
     return (

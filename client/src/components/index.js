@@ -8,6 +8,9 @@ import SongCard from "./SongCard";
 import SplashScreen from "./SplashScreen";
 import Statusbar from "./Statusbar";
 import NavBar from "./NavBar";
+import Comments from "./Comments";
+import SidePanel from "./SidePanel";
+import WorkspaceScreen from "./WorkspaceScreen";
 
 /*
     This serves as a module so that we can import
@@ -16,6 +19,9 @@ import NavBar from "./NavBar";
     @author McKilla Gorilla
 */
 export {
+  WorkspaceScreen,
+  SidePanel,
+  Comments,
   AppBanner,
   EditToolbar,
   ListCard,
