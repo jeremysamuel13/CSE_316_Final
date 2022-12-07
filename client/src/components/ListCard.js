@@ -7,6 +7,15 @@ import IconButton from "@mui/material/IconButton";
 import ListItem from "@mui/material/ListItem";
 import TextField from "@mui/material/TextField";
 import { useHistory } from "react-router-dom";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Paper,
+  Typography,
+} from "@mui/material";
+import WorkspaceScreen from "../pages/WorkspaceScreen";
 
 /*
     This is a card in our list of top 5 lists. It lets select
@@ -19,22 +28,9 @@ function ListCard(props) {
   const { store } = useContext(GlobalStoreContext);
   const [editActive, setEditActive] = useState(false);
   const [text, setText] = useState("");
-  const { idNamePair, selected } = props;
-  const history = useHistory();
+  const { idNamePair, selected, expanded } = props;
 
-  function handleLoadList(event, id) {
-    console.log("handleLoadList for " + id);
-    if (!event.target.disabled) {
-      let _id = event.target.id;
-      if (_id.indexOf("list-card-text-") >= 0)
-        _id = ("" + _id).substring("list-card-text-".length);
-
-      console.log("load " + event.target.id);
-
-      // CHANGE THE CURRENT LIST
-      store.setCurrentList(id);
-    }
-  }
+  const isPublished = idNamePair.isPublished;
 
   function handleToggleEdit(event) {
     event.stopPropagation();
@@ -67,6 +63,14 @@ function ListCard(props) {
     setText(event.target.value);
   }
 
+  const handleOpenList = () => {
+    if (!expanded) {
+      store.setCurrentList(idNamePair._id);
+    } else {
+      store.closeCurrentList();
+    }
+  };
+
   let selectClass = "unselected-list-card";
   if (selected) {
     selectClass = "selected-list-card";
@@ -75,42 +79,12 @@ function ListCard(props) {
   if (store.isListNameEditActive) {
     cardStatus = true;
   }
-  let cardElement = (
-    <ListItem
-      id={idNamePair._id}
-      key={idNamePair._id}
-      sx={{ marginTop: "15px", display: "flex", p: 1 }}
-      style={{ width: "100%", fontSize: "48pt" }}
-      button
-      onClick={(event) => {
-        handleLoadList(event, idNamePair._id);
-      }}
-    >
-      <Box sx={{ p: 1, flexGrow: 1 }}>{idNamePair.name}</Box>
-      <Box sx={{ p: 1 }}>
-        <IconButton onClick={handleToggleEdit} aria-label="edit">
-          <EditIcon style={{ fontSize: "48pt" }} />
-        </IconButton>
-      </Box>
-      <Box sx={{ p: 1 }}>
-        <IconButton
-          onClick={(event) => {
-            handleDeleteList(event, idNamePair._id);
-          }}
-          aria-label="delete"
-        >
-          <DeleteIcon style={{ fontSize: "48pt" }} />
-        </IconButton>
-      </Box>
-    </ListItem>
-  );
 
   if (editActive) {
-    cardElement = (
+    return (
       <TextField
         margin="normal"
         required
-        fullWidth
         id={"list-" + idNamePair._id}
         label="Playlist Name"
         name="name"
@@ -119,13 +93,48 @@ function ListCard(props) {
         onKeyPress={handleKeyPress}
         onChange={handleUpdateText}
         defaultValue={idNamePair.name}
-        inputProps={{ style: { fontSize: 48 } }}
-        InputLabelProps={{ style: { fontSize: 24 } }}
+        inputProps={{ style: { fontSize: 36 } }}
+        InputLabelProps={{ style: { fontSize: 16 } }}
         autoFocus
       />
     );
   }
-  return cardElement;
+  return (
+    <Accordion expanded={expanded} sx={{ margin: "2% 0%" }}>
+      <AccordionSummary>
+        <Box sx={{ p: 1, flexGrow: 1 }}>
+          <Typography variant="h6">{idNamePair.name}</Typography>
+          {isPublished && <Typography>Published!!</Typography>}
+        </Box>
+        <Box sx={{ p: 1 }}>
+          <IconButton onClick={handleToggleEdit} aria-label="edit">
+            <EditIcon style={{ fontSize: "16pt" }} />
+          </IconButton>
+        </Box>
+        <Box sx={{ p: 1 }}>
+          <IconButton
+            onClick={(event) => {
+              handleDeleteList(event, idNamePair._id);
+            }}
+            aria-label="delete"
+          >
+            <DeleteIcon style={{ fontSize: "16pt" }} />
+          </IconButton>
+        </Box>
+        <Box sx={{ p: 1 }}>
+          <IconButton
+            onClick={(event) => handleOpenList(event)}
+            aria-label="delete"
+          >
+            <KeyboardArrowDownIcon style={{ fontSize: "16pt" }} />
+          </IconButton>
+        </Box>
+      </AccordionSummary>
+      <AccordionDetails>
+        {expanded && <WorkspaceScreen id={idNamePair._id} />}
+      </AccordionDetails>
+    </Accordion>
+  );
 }
 
 export default ListCard;

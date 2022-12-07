@@ -1,5 +1,8 @@
 import React, { useContext, useState } from "react";
 import { GlobalStoreContext } from "../store";
+import ClearIcon from "@mui/icons-material/Clear";
+import { Box, IconButton, Paper, Stack, Typography } from "@mui/material";
+import { Link } from "react-router-dom";
 
 function SongCard(props) {
   const { store } = useContext(GlobalStoreContext);
@@ -36,42 +39,58 @@ function SongCard(props) {
   function handleRemoveSong(event) {
     store.showRemoveSongModal(index, song);
   }
-  function handleClick(event) {
+  function handleDoubleClick(event) {
     // DOUBLE CLICK IS FOR SONG EDITING
 
     store.showEditSongModal(index, song);
   }
 
-  let cardClass = "list-card unselected-list-card";
+  const handleClick = () => {
+    store.playIndex(index);
+  };
+
   return (
-    <div
-      key={index}
-      id={"song-" + index + "-card"}
-      className={cardClass}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnter={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      draggable="true"
-      onDoubleClick={handleClick}
+    <Paper
+      sx={{
+        backgroundColor: "wheat",
+        color: "black",
+        "&:hover": {
+          backgroundColor: "gray",
+          color: "white",
+        },
+        padding: "1% 2%",
+        margin: "2% 1%",
+      }}
     >
-      {index + 1}.
-      <a
-        id={"song-" + index + "-link"}
-        className="song-link"
-        href={"https://www.youtube.com/watch?v=" + song.youTubeId}
+      <Stack
+        key={index}
+        id={"song-" + index + "-card"}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        draggable="true"
+        onDoubleClick={handleDoubleClick}
+        onClick={handleClick}
+        direction={"row"}
+        justifyContent={"space-between"}
       >
+        <Typography variant="h6">
+          {index + 1}.
+          <Link to={"https://www.youtube.com/watch?v=" + song.youTubeId}>
+            {song.title} by {song.artist}
+          </Link>
+        </Typography>
+        <IconButton id={"remove-song-" + index} onClick={handleRemoveSong}>
+          <ClearIcon />
+        </IconButton>
+        {/* {index + 1}. */}
+        {/* <a id={"song-" + index + "-link"} className="song-link">
         {song.title} by {song.artist}
-      </a>
-      <input
-        type="button"
-        id={"remove-song-" + index}
-        className="list-card-button"
-        value={"\u2715"}
-        onClick={handleRemoveSong}
-      />
-    </div>
+      </a> */}
+      </Stack>
+    </Paper>
   );
 }
 

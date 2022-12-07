@@ -1,6 +1,5 @@
 import AppBanner from "./AppBanner";
 import EditToolbar from "./EditToolbar";
-import HomeScreen from "./HomeScreen";
 import ListCard from "./ListCard";
 import MUIDeleteModal from "./MUIDeleteModal";
 import MUIEditSongModal from "./MUIEditSongModal";
@@ -8,6 +7,7 @@ import MUIRemoveSongModal from "./MUIRemoveSongModal";
 import SongCard from "./SongCard";
 import SplashScreen from "./SplashScreen";
 import Statusbar from "./Statusbar";
+import NavBar from "./NavBar";
 
 /*
     This serves as a module so that we can import
@@ -18,7 +18,6 @@ import Statusbar from "./Statusbar";
 export {
   AppBanner,
   EditToolbar,
-  HomeScreen,
   ListCard,
   MUIDeleteModal,
   MUIEditSongModal,
@@ -26,4 +25,5 @@ export {
   SongCard,
   SplashScreen,
   Statusbar,
+  NavBar,
 };
