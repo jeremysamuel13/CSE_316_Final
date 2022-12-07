@@ -79,13 +79,9 @@ export default function AppBanner() {
     </Menu>
   );
 
-  let editToolbar = "";
   let menu = loggedOutMenu;
   if (auth.loggedIn) {
     menu = loggedInMenu;
-    if (store.currentList) {
-      editToolbar = <EditToolbar />;
-    }
   }
 
   function getAccountMenu(loggedIn) {
@@ -97,19 +93,24 @@ export default function AppBanner() {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+      <AppBar
+        position="static"
+        sx={{ backgroundColor: "#eeeedd" }}
+        elevation={0}
+      >
         <Toolbar>
-          <Typography
-            variant="h4"
-            noWrap
-            component="div"
-            sx={{ display: { xs: "none", sm: "block" } }}
-          >
-            <Link style={{ textDecoration: "none", color: "white" }} to="/">
-              ⌂
+          <Typography variant="h4" noWrap component="div" sx={{ flexGrow: 1 }}>
+            <Link
+              style={{
+                textDecoration: "none",
+                color: "red",
+                fontFamily: "'Satisfy', cursive",
+              }}
+              to="/"
+            >
+              Playlister
             </Link>
           </Typography>
-          <Box sx={{ flexGrow: 1 }}>{editToolbar}</Box>
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
             <IconButton
               size="large"
@@ -118,7 +119,7 @@ export default function AppBanner() {
               aria-controls={menuId}
               aria-haspopup="true"
               onClick={handleProfileMenuOpen}
-              color="inherit"
+              sx={{ color: "black" }}
             >
               {getAccountMenu(auth.loggedIn)}
             </IconButton>

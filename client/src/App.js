@@ -3,7 +3,7 @@ import { React } from "react";
 import { BrowserRouter, Switch } from "react-router-dom";
 import { AuthContextProvider } from "./auth";
 import { GlobalStoreContextProvider } from "./store";
-import { AppBanner, Statusbar } from "./components";
+import { AppBanner, Statusbar, NavBar } from "./components";
 import { Router } from "./router/router";
 
 /*
@@ -24,6 +24,7 @@ const App = () => {
       <AuthContextProvider>
         <GlobalStoreContextProvider>
           <AppBanner />
+          <NavBar />
           <Switch>
             <Router />
           </Switch>
