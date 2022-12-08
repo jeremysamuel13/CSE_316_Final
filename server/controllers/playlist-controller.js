@@ -80,9 +80,9 @@ deletePlaylist = async (req, res) => {
 getPlaylistById = async (req, res) => {
   console.log("Find Playlist with id: " + JSON.stringify(req.params.id));
 
-  const list = await Playlist.findById({ _id: req.params.id }).populate(
-    "comments.user"
-  );
+  const list = await Playlist.findById({ _id: req.params.id })
+    .populate("comments.user")
+    .populate("user");
 
   if (!list.isPublished) {
     const user = await User.findOne({ email: list.ownerEmail });
@@ -102,6 +102,7 @@ getPlaylistById = async (req, res) => {
     success: true,
     playlist: {
       ...list._doc,
+      username: list.user.username,
       likes: list.likes.length,
       dislikes: list.dislikes.length,
       hasLiked: list.likes.some((x) => x.equals(req.userId)),
@@ -563,7 +564,7 @@ const listen = async (req, res) => {
       listens,
       isPublished,
       hasLiked: likes.some((x) => x.equals(req.userId)),
-      hasDisliked: dislikes.some(x.equals(req.userId)),
+      hasDisliked: dislikes.some((x) => x.equals(req.userId)),
       username: user.username,
     },
   });

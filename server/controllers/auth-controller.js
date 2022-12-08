@@ -80,6 +80,7 @@ loginUser = async (req, res) => {
           firstName: existingUser.firstName,
           lastName: existingUser.lastName,
           email: existingUser.email,
+          username: existingUser.username,
         },
       });
   } catch (err) {

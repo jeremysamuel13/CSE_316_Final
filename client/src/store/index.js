@@ -673,7 +673,7 @@ function GlobalStoreContextProvider(props) {
 
     console.log(res);
     if (res.data?.success) {
-      history.push("/published");
+      history.push("/all");
       store.loadPublishedPlaylists();
       storeReducer({
         type: GlobalStoreActionType.SET_CURRENT_LIST,
@@ -734,6 +734,10 @@ function GlobalStoreContextProvider(props) {
       type: GlobalStoreActionType.SET_SEARCH,
       payload: search,
     });
+  };
+
+  store.listen = async (id) => {
+    await api.listen(id);
   };
 
   return (

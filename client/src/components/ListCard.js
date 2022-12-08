@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { GlobalStoreContext } from "../store";
 import Box from "@mui/material/Box";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -29,6 +29,13 @@ function ListCard(props) {
   const [editActive, setEditActive] = useState(false);
   const [text, setText] = useState("");
   const { idNamePair, expanded } = props;
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (expanded && !idNamePair.isPublished) {
+      store.listen(idNamePair._id);
+    }
+  }, [expanded]);
 
   function handleToggleEdit(event) {
     event.stopPropagation();
@@ -51,7 +58,8 @@ function ListCard(props) {
   }
 
   function handleKeyPress(event) {
-    if (event.code === "Enter") {
+    console.log(event.code);
+    if (event.code === "Enter" && !error) {
       let id = event.target.id.substring("list-".length);
       store.changeListName(id, text);
       toggleEdit();
@@ -59,6 +67,13 @@ function ListCard(props) {
   }
   function handleUpdateText(event) {
     setText(event.target.value);
+    const err = store.idNamePairs.some(
+      (x) =>
+        x._id !== idNamePair._id && x.name.trim() === event.target.value.trim()
+    );
+    if (err !== error) {
+      setError(err);
+    }
   }
 
   const handleOpenList = () => {
@@ -80,6 +95,7 @@ function ListCard(props) {
   if (editActive) {
     return (
       <TextField
+        error={error}
         margin="normal"
         required
         id={"list-" + idNamePair._id}

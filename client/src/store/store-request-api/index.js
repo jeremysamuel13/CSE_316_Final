@@ -41,7 +41,7 @@ export const comment = (id, comment) =>
   api.post(`/published/${id}/comment`, { comment });
 export const like = (id) => api.put(`/published/${id}/like`);
 export const dislike = (id) => api.put(`/published/${id}/dislike`);
-export const listen = (id) => api.put(`/published/${id}/listen`);
+export const listen = (id) => api.post(`/published/${id}/listen`);
 
 const apis = {
   createPlaylist,

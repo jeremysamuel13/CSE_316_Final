@@ -44,6 +44,19 @@ const PublishedListCard = (props) => {
     }
   }, [playlist]);
 
+  useEffect(() => {
+    if (expanded) {
+      store.listen(playlist._id);
+    }
+  }, [expanded]);
+
+  function handleDeleteList(event, id) {
+    event.stopPropagation();
+    // let _id = event.target.id;
+    // _id = ("" + _id).substring("delete-list-".length);
+    store.markListForDeletion(playlist._id);
+  }
+
   const handleOpenList = () => {
     if (!expanded) {
       store.setCurrentList(playlist._id);
@@ -121,6 +134,19 @@ const PublishedListCard = (props) => {
               notation: "compact",
               maximumFractionDigits: 1,
             }).format(dislikeValue)}
+          </IconButton>
+        </Box>
+        <Box sx={{ p: 1 }}>
+          <IconButton
+            disabled={
+              guest || auth.user?.username !== (playlist.username ?? "")
+            }
+            onClick={(event) => {
+              handleDeleteList(event, playlist._id);
+            }}
+            aria-label="delete"
+          >
+            <DeleteIcon style={{ fontSize: "16pt" }} />
           </IconButton>
         </Box>
         <Box sx={{ p: 1 }}>
