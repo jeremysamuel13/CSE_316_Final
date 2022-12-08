@@ -79,8 +79,6 @@ function ListCard(props) {
   const handleOpenList = () => {
     if (!expanded) {
       store.setCurrentList(idNamePair._id);
-    } else {
-      store.closeCurrentList();
     }
   };
 
@@ -116,7 +114,9 @@ function ListCard(props) {
   console.log(idNamePair);
   return (
     <Accordion expanded={expanded} sx={{ margin: "2% 0%" }}>
-      <AccordionSummary>
+      <AccordionSummary
+        onDoubleClick={!expanded ? handleToggleEdit : undefined}
+      >
         <Box sx={{ p: 1, flexGrow: 1 }}>
           <Stack>
             <Typography variant="h6">{idNamePair.name}</Typography>
@@ -124,11 +124,6 @@ function ListCard(props) {
               <b>By:</b> {idNamePair.username}
             </Typography>
           </Stack>
-        </Box>
-        <Box sx={{ p: 1 }}>
-          <IconButton onClick={handleToggleEdit} aria-label="edit">
-            <EditIcon style={{ fontSize: "16pt" }} />
-          </IconButton>
         </Box>
         <Box sx={{ p: 1 }}>
           <IconButton

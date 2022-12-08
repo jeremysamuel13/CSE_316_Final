@@ -60,8 +60,6 @@ const PublishedListCard = (props) => {
   const handleOpenList = () => {
     if (!expanded) {
       store.setCurrentList(playlist._id);
-    } else {
-      store.closeCurrentList();
     }
   };
 

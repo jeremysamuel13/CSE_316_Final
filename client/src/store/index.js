@@ -176,7 +176,7 @@ function GlobalStoreContextProvider(props) {
           ...st,
           currentModal: CurrentModal.NONE,
           currentList: payload,
-          currentSongIndex: -1,
+          currentSongIndex: payload.songs?.length > 0 ? 0 : -1,
           currentSong: null,
           listNameActive: false,
           listIdMarkedForDeletion: null,

@@ -26,6 +26,7 @@ const style = {
 const MUIDuplicatePlaylistModal = () => {
   const { store } = useContext(GlobalStoreContext);
   const [nameInput, setNameInput] = useState(null);
+  const [error, setError] = useState(true);
 
   const name = nameInput ?? store.currentList?.name;
 
@@ -39,20 +40,29 @@ const MUIDuplicatePlaylistModal = () => {
     setNameInput(null);
   }
 
+  function handleUpdateText(event) {
+    setNameInput(event.target.value);
+    const err = store.idNamePairs.some(
+      (x) => x.name.trim() === event.target.value.trim()
+    );
+    if (err !== error) {
+      setError(err);
+    }
+  }
+
   return (
     <Modal open={store.isDuplicateListModal()}>
       <Paper sx={style}>
         <Stack spacing={2}>
           <Stack direction={"row"} spacing={2}>
             <Typography variant="h6">New List Name: </Typography>
-            <Input
-              value={name}
-              onChange={(e) => setNameInput(e.target.value)}
-            />
+            <Input error={error} value={name} onChange={handleUpdateText} />
           </Stack>
           <ButtonGroup>
             <Button onClick={handleCloseModal}>Cancel</Button>
-            <Button onClick={handleDuplicateList}>Duplicate</Button>
+            <Button onClick={handleDuplicateList} disabled={error}>
+              Duplicate
+            </Button>
           </ButtonGroup>
         </Stack>
       </Paper>
