@@ -51,6 +51,45 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+const SortingFields = [
+  {
+    sort: SortType.NAME,
+    value: "Name (A-Z)",
+    published: true,
+    home: true,
+  },
+  {
+    sort: SortType.DATE,
+    value: "Publish Date (Newest)",
+    published: true,
+  },
+  {
+    sort: SortType.LISTENS,
+    value: "Listens (High - Low)",
+    published: true,
+  },
+  {
+    sort: SortType.LIKES,
+    value: "Likes (High - Low)",
+    published: true,
+  },
+  {
+    sort: SortType.DISLIKES,
+    value: "Dislikes (High - Low)",
+    published: true,
+  },
+  {
+    sort: SortType.CREATE_DATE,
+    value: "Creation Date (Old-New)",
+    home: true,
+  },
+  {
+    sort: SortType.LAST_EDIT_DATE,
+    value: "Last Edit Date (New-Old)",
+    home: true,
+  },
+];
+
 const NavBar = () => {
   const { store } = useContext(GlobalStoreContext);
   const { auth } = useContext(AuthContext);
@@ -60,8 +99,15 @@ const NavBar = () => {
 
   const [search, setSearch] = useState("");
 
+  const path = window.location.pathname;
+  const published = path.startsWith("/all") || path.startsWith("/user");
+
   const onSelect = (event) => {
-    store.sort(event.target.attributes.sort.value);
+    if (published) {
+      store.sort(event.target.attributes.sort.value);
+    } else {
+      store.sortUser(event.target.attributes.sort.value);
+    }
     setAnchorEl(null);
   };
 
@@ -119,26 +165,16 @@ const NavBar = () => {
             open={!!anchorEl}
             onClose={() => setAnchorEl(null)}
           >
-            <MenuItem
-              sort={SortType.NAME}
-              onClick={onSelect}
-              selected={store.sort === SortType.NAME}
-              disabled={store.sort === SortType.NAME}
-            >
-              Name (A-Z)
-            </MenuItem>
-            <MenuItem sort={SortType.DATE} onClick={onSelect}>
-              Publish Date (Newest)
-            </MenuItem>
-            <MenuItem sort={SortType.LISTENS} onClick={onSelect}>
-              Listens (High - Low)
-            </MenuItem>
-            <MenuItem sort={SortType.LIKES} onClick={onSelect}>
-              Likes (High - Low)
-            </MenuItem>
-            <MenuItem sort={SortType.DISLIKES} onClick={onSelect}>
-              Dislikes (High - Low)
-            </MenuItem>
+            {SortingFields.filter((x) => {
+              if (published) {
+                return x.published;
+              }
+              return x.home;
+            }).map((s) => (
+              <MenuItem key={s.sort} sort={s.sort} onClick={onSelect}>
+                {s.value}
+              </MenuItem>
+            ))}
           </Menu>
         </Box>
       </Toolbar>

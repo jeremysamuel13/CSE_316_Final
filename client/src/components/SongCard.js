@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 function SongCard(props) {
   const { store } = useContext(GlobalStoreContext);
-  const { song, index } = props;
+  const { song, index, isPlaying } = props;
 
   function handleDragStart(event) {
     event.dataTransfer.setData("song", index);
@@ -45,10 +45,12 @@ function SongCard(props) {
     store.playIndex(index);
   };
 
+  const backgroundColor = isPlaying ? "teal" : "wheat";
+
   return (
     <Paper
       sx={{
-        backgroundColor: "wheat",
+        backgroundColor,
         color: "black",
         "&:hover": {
           backgroundColor: "gray",

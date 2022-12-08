@@ -102,6 +102,8 @@ getPlaylistById = async (req, res) => {
     success: true,
     playlist: {
       ...list._doc,
+      createdAt: list.createdAt,
+      updatedAt: list.updatedAt,
       username: list.user.username,
       likes: list.likes.length,
       dislikes: list.dislikes.length,
@@ -138,6 +140,8 @@ getPlaylistPairs = async (req, res) => {
             let list = playlists[key];
             let pair = list.isPublished
               ? {
+                  createdAt: list.createdAt,
+                  updatedAt: list.updatedAt,
                   likes: list.likes.length,
                   dislikes: list.dislikes.length,
                   name: list.name,
@@ -153,6 +157,8 @@ getPlaylistPairs = async (req, res) => {
                   _id: list._id,
                   name: list.name,
                   username: user.username,
+                  createdAt: list.createdAt,
+                  updatedAt: list.updatedAt,
                 };
             pairs.push(pair);
           }
@@ -269,6 +275,8 @@ const getPublishedPlaylists = async (req, res) => {
       user,
       isPublished,
       comments,
+      createdAt,
+      updatedAt,
     }) => ({
       likes: likes.length,
       dislikes: dislikes.length,
@@ -284,6 +292,8 @@ const getPublishedPlaylists = async (req, res) => {
         ...c._doc,
         user: { username: c.user.username },
       })),
+      createdAt,
+      updatedAt,
     })
   );
 
@@ -381,6 +391,8 @@ const publishPlaylist = async (req, res) => {
     listens,
     user,
     isPublished,
+    createdAt,
+    updatedAt,
   } = playlist;
 
   return res.status(200).json({
@@ -396,6 +408,8 @@ const publishPlaylist = async (req, res) => {
       hasLiked: likes.some((x) => x.equals(req.userId)),
       hasDisliked: dislikes.some((x) => x.equals(req.userId)),
       username: user.username,
+      createdAt,
+      updatedAt,
     },
   });
 };
@@ -440,6 +454,8 @@ const likePlaylist = async (req, res) => {
     listens,
     user,
     isPublished,
+    createdAt,
+    updatedAt,
   } = playlist;
   return res.status(200).json({
     success: true,
@@ -454,6 +470,8 @@ const likePlaylist = async (req, res) => {
       hasLiked: likes.some((x) => x.equals(cl._id)),
       hasDisliked: dislikes.some((x) => x.equals(cl._id)),
       username: user.username,
+      createdAt,
+      updatedAt,
     },
   });
 };
@@ -497,6 +515,8 @@ const dislikePlaylist = async (req, res) => {
     listens,
     user,
     isPublished,
+    createdAt,
+    updatedAt,
   } = playlist;
   return res.status(200).json({
     success: true,
@@ -511,6 +531,8 @@ const dislikePlaylist = async (req, res) => {
       hasLiked: likes.some((x) => x.equals(cl._id)),
       hasDisliked: dislikes.some((x) => x.equals(cl._id)),
       username: user.username,
+      createdAt,
+      updatedAt,
     },
   });
 };
@@ -552,6 +574,8 @@ const listen = async (req, res) => {
     listens,
     user,
     isPublished,
+    createdAt,
+    updatedAt,
   } = playlist;
   return res.status(200).json({
     success: true,
@@ -566,6 +590,8 @@ const listen = async (req, res) => {
       hasLiked: likes.some((x) => x.equals(req.userId)),
       hasDisliked: dislikes.some((x) => x.equals(req.userId)),
       username: user.username,
+      createdAt,
+      updatedAt,
     },
   });
 };

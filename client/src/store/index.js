@@ -7,6 +7,7 @@ import MoveSong_Transaction from "../transactions/MoveSong_Transaction";
 import RemoveSong_Transaction from "../transactions/RemoveSong_Transaction";
 import UpdateSong_Transaction from "../transactions/UpdateSong_Transaction";
 import AuthContext from "../auth";
+import { getBottomNavigationUtilityClass } from "@mui/material";
 /*
     This is our global data store. Note that it uses the Flux design pattern,
     which makes use of things like actions and reducers. 
@@ -38,6 +39,7 @@ export const GlobalStoreActionType = {
   DUPLICATE_PLAYLIST: "DUPLICATE_PLAYLIST",
   SYNC_LOCAL_CHANGE: "SYNC_LOCAL_CHANGE",
   SET_SEARCH: "SET_SEARCH",
+  SET_ID_NAME_PAIRS: "SET_ID_NAME_PAIRS",
 };
 
 export const SortType = {
@@ -46,6 +48,8 @@ export const SortType = {
   LISTENS: "listens",
   LIKES: "likes",
   DISLIKES: "dislikes",
+  CREATE_DATE: "create_date",
+  LAST_EDIT_DATE: "last_edit_date",
 };
 
 // WE'LL NEED THIS TO PROCESS TRANSACTIONS
@@ -172,12 +176,13 @@ function GlobalStoreContextProvider(props) {
       }
       // UPDATE A LIST
       case GlobalStoreActionType.SET_CURRENT_LIST: {
+        const index = payload.songs?.length > 0 ? 0 : -1;
         return setStore((st) => ({
           ...st,
           currentModal: CurrentModal.NONE,
           currentList: payload,
-          currentSongIndex: payload.songs?.length > 0 ? 0 : -1,
-          currentSong: null,
+          currentSongIndex: index,
+          currentSong: index >= 0 ? payload.songs[index] : null,
           listNameActive: false,
           listIdMarkedForDeletion: null,
           listMarkedForDeletion: null,
@@ -248,6 +253,9 @@ function GlobalStoreContextProvider(props) {
       }
       case GlobalStoreActionType.SET_SEARCH: {
         return setStore((st) => ({ ...st, search: payload }));
+      }
+      case GlobalStoreActionType.SET_ID_NAME_PAIRS: {
+        return setStore((st) => ({ ...st, idNamePairs: payload }));
       }
       default:
         return store;
@@ -577,6 +585,49 @@ function GlobalStoreContextProvider(props) {
   };
   store.canClose = function () {
     return store.currentList !== null;
+  };
+
+  store.sortUser = (type) => {
+    let sorted;
+    switch (type) {
+      case SortType.NAME:
+        console.log(store.publishedPlaylists);
+        sorted = store.idNamePairs?.sort(({ name: x }, { name: y }) =>
+          x.localeCompare(y)
+        );
+
+        console.log(sorted);
+
+        break;
+      case SortType.LAST_EDIT_DATE:
+        sorted = store.idNamePairs?.sort(
+          ({ updatedAt: x }, { updatedAt: y }) => {
+            const dx = new Date(x);
+            const dy = new Date(y);
+
+            return dy - dx;
+          }
+        );
+        break;
+      case SortType.CREATE_DATE:
+        sorted = store.idNamePairs.sort(
+          ({ createdAt: x }, { createdAt: y }) => {
+            console.log({ x, y });
+            const dx = new Date(x);
+            const dy = new Date(y);
+
+            return dx - dy;
+          }
+        );
+        break;
+      default:
+        break;
+    }
+
+    storeReducer({
+      type: GlobalStoreActionType.SET_ID_NAME_PAIRS,
+      payload: sorted,
+    });
   };
 
   store.sort = (type) => {

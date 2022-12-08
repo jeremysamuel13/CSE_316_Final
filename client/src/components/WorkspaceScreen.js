@@ -35,6 +35,7 @@ function WorkspaceScreen() {
             key={"playlist-song-" + index}
             index={index}
             song={song}
+            isPlaying={store.currentSongIndex === index}
           />
         ))}
       </List>

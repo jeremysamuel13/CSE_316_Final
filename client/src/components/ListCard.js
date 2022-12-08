@@ -16,6 +16,7 @@ import {
 import WorkspaceScreen from "./WorkspaceScreen";
 import PublishIcon from "@mui/icons-material/Publish";
 import PublishedListCard from "./PublishedListCard";
+import AuthContext from "../auth";
 
 /*
     This is a card in our list of top 5 lists. It lets select
@@ -26,6 +27,8 @@ import PublishedListCard from "./PublishedListCard";
 */
 function ListCard(props) {
   const { store } = useContext(GlobalStoreContext);
+  const { auth } = useContext(AuthContext);
+
   const [editActive, setEditActive] = useState(false);
   const [text, setText] = useState("");
   const { idNamePair, expanded } = props;
@@ -86,6 +89,11 @@ function ListCard(props) {
     store.publishList(idNamePair._id);
   };
 
+  const owned = auth.user?.username === idNamePair.username;
+  const playing = store.currentList?._id === idNamePair._id;
+
+  const backgroundColor = playing ? "#7f02a3" : owned ? "#FFFDD0" : undefined;
+
   if (idNamePair.isPublished) {
     return <PublishedListCard expanded={expanded} playlist={idNamePair} />;
   }
@@ -107,13 +115,15 @@ function ListCard(props) {
         inputProps={{ style: { fontSize: 36 } }}
         InputLabelProps={{ style: { fontSize: 16 } }}
         autoFocus
+        sx={{ backgroundColor }}
       />
     );
   }
 
   console.log(idNamePair);
+
   return (
-    <Accordion expanded={expanded} sx={{ margin: "2% 0%" }}>
+    <Accordion expanded={expanded} sx={{ margin: "2% 0%", backgroundColor }}>
       <AccordionSummary
         onDoubleClick={!expanded ? handleToggleEdit : undefined}
       >

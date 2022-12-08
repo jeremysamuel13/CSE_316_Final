@@ -37,9 +37,9 @@ export const YoutubePlayer = () => {
   const canPlay = store.currentSongIndex !== -1;
   const canPause = store.currentSongIndex !== -1;
   const hasNext =
-    store.currentList?.songs?.length > 0 &&
+    store.currentList?.songs?.length >= 0 &&
     store.currentSongIndex + 1 < store.currentList?.songs?.length;
-  const hasPrevious = store.currentSongIndex - 1 > 0;
+  const hasPrevious = store.currentSongIndex > 0;
 
   return (
     <Grid container>

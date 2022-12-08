@@ -89,8 +89,13 @@ const PublishedListCard = (props) => {
     (playlist.hasDisliked ? 1 : 0) +
     (ratingState === "disliked" ? 1 : 0);
 
+  const owned = auth.user?.username === playlist.username;
+  const playing = store.currentList?._id === playlist._id;
+
+  const backgroundColor = playing ? "#7f02a3" : owned ? "#FFFDD0" : undefined;
+
   return (
-    <Accordion expanded={expanded} sx={{ margin: "2% 1%" }}>
+    <Accordion expanded={expanded} sx={{ margin: "2% 1%", backgroundColor }}>
       <AccordionSummary>
         <Box sx={{ p: 1, flexGrow: 1 }}>
           <Stack>
