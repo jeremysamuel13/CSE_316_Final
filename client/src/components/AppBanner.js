@@ -101,6 +101,7 @@ export default function AppBanner() {
                 textDecoration: "none",
                 color: "red",
                 fontFamily: "'Satisfy', cursive",
+                fontWeight: "bold",
               }}
               to="/"
             >

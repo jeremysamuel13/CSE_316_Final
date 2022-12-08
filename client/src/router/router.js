@@ -29,25 +29,25 @@ const PATHS = [
     withSidePanel: true,
   },
   {
-    path: "/user/",
+    path: "/user",
     component: <UserPlaylists />,
     allowGuest: true,
     withSidePanel: true,
   },
   {
-    path: "/all/",
+    path: "/all",
     component: <PublishedPlaylists />,
     allowGuest: true,
     withSidePanel: true,
   },
   {
-    path: "/login/",
+    path: "/login",
     component: <LoginScreen />,
     allowGuest: true,
     withSidePanel: false,
   },
   {
-    path: "/register/",
+    path: "/register",
     component: <RegisterScreen />,
     allowGuest: true,
     withSidePanel: false,
@@ -81,8 +81,12 @@ export const Router = () => {
   const { auth } = useContext(AuthContext);
 
   return PATHS.map((r) => {
-    if (!auth.loggedIn && r.allowGuest === false) {
-      return <NotAuthorized key={r.path} />;
+    if (!r.allowGuest && !auth.loggedIn) {
+      return (
+        <Route path={r.path} exact key={r.path}>
+          <NotAuthorized key={r.path} />
+        </Route>
+      );
     }
 
     if (r.withSidePanel) {

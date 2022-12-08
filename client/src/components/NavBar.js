@@ -19,6 +19,7 @@ import { styled, alpha } from "@mui/material/styles";
 import SortIcon from "@mui/icons-material/Sort";
 import { useHistory } from "react-router-dom";
 import { Stack } from "@mui/system";
+import AuthContext from "../auth";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -34,15 +35,6 @@ const Search = styled("div")(({ theme }) => ({
     marginLeft: theme.spacing(3),
     width: "auto",
   },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
@@ -61,6 +53,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 const NavBar = () => {
   const { store } = useContext(GlobalStoreContext);
+  const { auth } = useContext(AuthContext);
+
   const [anchorEl, setAnchorEl] = useState(null);
   const history = useHistory();
 
@@ -72,10 +66,16 @@ const NavBar = () => {
   };
 
   return (
-    <AppBar position="static" sx={{ margin: "3px 5px" }}>
+    <AppBar
+      position="static"
+      sx={{ margin: "3px 5px", backgroundColor: "#b105e3" }}
+    >
       <Toolbar>
         <Box>
-          <IconButton onClick={() => history.push("/home")}>
+          <IconButton
+            disabled={!auth.loggedIn}
+            onClick={() => history.push("/home")}
+          >
             <HomeIcon />
           </IconButton>
           <IconButton onClick={() => history.push("/all")}>
@@ -119,7 +119,12 @@ const NavBar = () => {
             open={!!anchorEl}
             onClose={() => setAnchorEl(null)}
           >
-            <MenuItem sort={SortType.NAME} onClick={onSelect}>
+            <MenuItem
+              sort={SortType.NAME}
+              onClick={onSelect}
+              selected={store.sort === SortType.NAME}
+              disabled={store.sort === SortType.NAME}
+            >
               Name (A-Z)
             </MenuItem>
             <MenuItem sort={SortType.DATE} onClick={onSelect}>

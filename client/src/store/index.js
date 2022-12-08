@@ -75,6 +75,7 @@ function GlobalStoreContextProvider(props) {
     publishedPlaylists: [],
     published: false,
     search: "",
+    sort: null,
   });
   const history = useHistory();
 
@@ -302,6 +303,7 @@ function GlobalStoreContextProvider(props) {
   // THIS FUNCTION CREATES A NEW LIST
   store.createNewList = async function (body) {
     store.closeCurrentList();
+
     let newListName = body?.name ?? "Untitled" + (store.idNamePairs.length + 1);
     const res = await api.createPlaylist({
       ...body,
@@ -578,12 +580,18 @@ function GlobalStoreContextProvider(props) {
   };
 
   store.sort = (type) => {
+    console.log(type);
+
     let sorted;
     switch (type) {
       case SortType.NAME:
+        console.log(store.publishedPlaylists);
         sorted = store.publishedPlaylists.sort(({ name: x }, { name: y }) =>
           x.localeCompare(y)
         );
+
+        console.log(sorted);
+
         break;
       case SortType.DATE:
         sorted = store.publishedPlaylists.sort(
@@ -615,7 +623,7 @@ function GlobalStoreContextProvider(props) {
     }
 
     storeReducer({
-      type: GlobalStoreActionType.SET_PUBLISHED_PLAYLISTS,
+      type: GlobalStoreActionType.SET_PUBLISHED,
       payload: sorted,
     });
   };

@@ -126,7 +126,6 @@ function AuthContextProvider(props) {
           user: response.data.user,
         },
       });
-      auth.loginUser(email, password);
       history.push("/");
     } else if (response.data?.errorMessage) {
       auth.setError(AuthActionType.REGISTER_USER, response.data.errorMessage);
@@ -142,7 +141,7 @@ function AuthContextProvider(props) {
           user: response.data.user,
         },
       });
-      history.push("/");
+      history.push("/home");
     } else if (response.data?.errorMessage) {
       auth.setError(AuthActionType.LOGIN_USER, response.data.errorMessage);
     }
