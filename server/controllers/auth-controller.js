@@ -22,6 +22,7 @@ getLoggedIn = async (req, res) => {
         firstName: loggedInUser.firstName,
         lastName: loggedInUser.lastName,
         email: loggedInUser.email,
+        username: loggedInUser.username,
       },
     });
   } catch (err) {
@@ -100,7 +101,8 @@ logoutUser = async (req, res) => {
 
 registerUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, passwordVerify } = req.body;
+    const { firstName, lastName, email, password, passwordVerify, username } =
+      req.body;
     console.log(
       "create user: " +
         firstName +
@@ -111,9 +113,18 @@ registerUser = async (req, res) => {
         " " +
         password +
         " " +
-        passwordVerify
+        passwordVerify +
+        " " +
+        username
     );
-    if (!firstName || !lastName || !email || !password || !passwordVerify) {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !passwordVerify ||
+      !username
+    ) {
       return res
         .status(400)
         .json({ errorMessage: "Please enter all required fields." });
@@ -131,12 +142,13 @@ registerUser = async (req, res) => {
       });
     }
     console.log("password and password verify match");
-    const existingUser = await User.findOne({ email: email });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     console.log("existingUser: " + existingUser);
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        errorMessage: "An account with this email address already exists.",
+        errorMessage:
+          "An account with this email address/username already exists.",
       });
     }
 
@@ -150,6 +162,7 @@ registerUser = async (req, res) => {
       lastName,
       email,
       passwordHash,
+      username,
     });
     const savedUser = await newUser.save();
     console.log("new user saved: " + savedUser._id);
@@ -171,6 +184,7 @@ registerUser = async (req, res) => {
           firstName: savedUser.firstName,
           lastName: savedUser.lastName,
           email: savedUser.email,
+          username: savedUser.username,
         },
       });
 

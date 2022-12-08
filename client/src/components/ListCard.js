@@ -105,7 +105,7 @@ function ListCard(props) {
           <Stack>
             <Typography variant="h6">{idNamePair.name}</Typography>
             <Typography variant="caption">
-              <b>By:</b> {`${idNamePair.firstName} ${idNamePair.lastName}`}
+              <b>By:</b> {idNamePair.username}
             </Typography>
           </Stack>
         </Box>

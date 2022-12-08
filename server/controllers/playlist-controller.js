@@ -84,33 +84,33 @@ getPlaylistById = async (req, res) => {
     "comments.user"
   );
 
-  // DOES THIS LIST BELONG TO THIS USER?
-  await User.findOne({ email: list.ownerEmail }, (err, user) => {
+  if (!list.isPublished) {
+    const user = await User.findOne({ email: list.ownerEmail });
     console.log("user._id: " + user._id);
     console.log("req.userId: " + req.userId);
-    if (user._id == req.userId) {
-      console.log("correct user!");
-      console.log(list.likes);
-      return res.status(200).json({
-        success: true,
-        playlist: {
-          ...list._doc,
-          likes: list.likes.length,
-          dislikes: list.dislikes.length,
-          hasLiked: list.likes.includes(req.userId),
-          hasDisliked: list.dislikes.includes(req.userId),
-          comments: list.comments.map((c) => ({
-            ...c._doc,
-            user: { firstName: c.user.firstName, lastName: c.user.lastName },
-          })),
-        },
-      });
-    } else {
+    if (user._id != req.userId) {
       console.log("incorrect user!");
       return res
         .status(400)
         .json({ success: false, description: "authentication error" });
     }
+  }
+
+  console.log("correct user!");
+  console.log(list.likes);
+  return res.status(200).json({
+    success: true,
+    playlist: {
+      ...list._doc,
+      likes: list.likes.length,
+      dislikes: list.dislikes.length,
+      hasLiked: list.likes.some((x) => x.equals(req.userId)),
+      hasDisliked: list.dislikes.some((x) => x.equals(req.userId)),
+      comments: list.comments.map((c) => ({
+        ...c._doc,
+        user: { username: c.user.username },
+      })),
+    },
   });
 };
 getPlaylistPairs = async (req, res) => {
@@ -144,16 +144,14 @@ getPlaylistPairs = async (req, res) => {
                   publishDate: list.publishDate,
                   listens: list.listens,
                   isPublished: list.isPublished,
-                  firstName: user.firstName,
-                  lastName: user.lastName,
-                  hasLiked: list.likes.includes(req.userId),
-                  hasDisliked: list.dislikes.includes(req.userId),
+                  username: user.username,
+                  hasLiked: list.likes.some((x) => x.equals(req.userId)),
+                  hasDisliked: list.dislikes.some((x) => x.equals(req.userId)),
                 }
               : {
                   _id: list._id,
                   name: list.name,
-                  firstName: user.firstName,
-                  lastName: user.lastName,
+                  username: user.username,
                 };
             pairs.push(pair);
           }
@@ -177,11 +175,11 @@ getPlaylists = async (req, res) => {
       ...pl,
       likes: likes.length,
       dislikes: dislikes.length,
-      hasLiked: likes.includes(req.userId),
-      hasDisliked: dislikes.includes(req.userId),
+      hasLiked: likes.some((x) => x.equals(req.userId)),
+      hasDisliked: dislikes.some((x) => x.equals(req.userId)),
       comments: comments.map((c) => ({
         ...c._doc,
-        user: { firstName: c.user.firstName, lastName: c.user.lastName },
+        user: { username: c.user.username },
       })),
     })),
   });
@@ -278,13 +276,12 @@ const getPublishedPlaylists = async (req, res) => {
       publishDate,
       listens,
       isPublished,
-      hasLiked: userId ? likes.includes(userId) : undefined,
-      hasDisliked: userId ? dislikes.includes(userId) : undefined,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      hasLiked: userId ? likes.some((x) => x.equals(userId)) : undefined,
+      hasDisliked: userId ? dislikes.some((x) => x.equals(userId)) : undefined,
+      username: user.username,
       comments: comments.map((c) => ({
         ...c._doc,
-        user: { firstName: c.user.firstName, lastName: c.user.lastName },
+        user: { username: c.user.username },
       })),
     })
   );
@@ -329,7 +326,7 @@ const addComment = async (req, res) => {
     success: true,
     data: {
       ...c._doc,
-      user: { firstName: cl.firstName, lastName: cl.lastName },
+      user: { username: cl.username },
     },
   });
 };
@@ -344,7 +341,7 @@ const publishPlaylist = async (req, res) => {
     });
   }
 
-  const playlist = await Playlist.findById(id).populate("user");
+  let playlist = await Playlist.findById(id).populate("user");
 
   if (!playlist) {
     console.log("doesnt exist");
@@ -370,7 +367,7 @@ const publishPlaylist = async (req, res) => {
   playlist.isPublished = true;
   playlist.publishDate = new Date();
 
-  await playlist.save();
+  playlist = await playlist.save();
 
   console.log("set published");
 
@@ -395,10 +392,9 @@ const publishPlaylist = async (req, res) => {
       publishDate,
       listens,
       isPublished,
-      hasLiked: likes.includes(req.userId),
-      hasDisliked: dislikes.includes(req.userId),
-      firstName: user.firstName,
-      lastName: user.lastName,
+      hasLiked: likes.some((x) => x.equals(req.userId)),
+      hasDisliked: dislikes.some((x) => x.equals(req.userId)),
+      username: user.username,
     },
   });
 };
@@ -413,7 +409,7 @@ const likePlaylist = async (req, res) => {
     });
   }
 
-  const playlist = await Playlist.findById(id);
+  let playlist = await Playlist.findById(id).populate("user");
 
   if (!playlist) {
     return res
@@ -430,9 +426,9 @@ const likePlaylist = async (req, res) => {
   const cl = await User.findById(req.userId);
 
   !playlist.likes.includes(cl) && playlist.likes.push(cl);
-  playlist.dislikes = playlist.dislikes.filter((x) => x === cl._id);
+  playlist.dislikes = playlist.dislikes.filter((x) => !x.equals(cl._id));
 
-  await playlist.save();
+  playlist = await playlist.save();
 
   const {
     likes,
@@ -454,10 +450,9 @@ const likePlaylist = async (req, res) => {
       publishDate,
       listens,
       isPublished,
-      hasLiked: likes.includes(req.userId),
-      hasDisliked: dislikes.includes(req.userId),
-      firstName: user.firstName,
-      lastName: user.lastName,
+      hasLiked: likes.some((x) => x.equals(cl._id)),
+      hasDisliked: dislikes.some((x) => x.equals(cl._id)),
+      username: user.username,
     },
   });
 };
@@ -472,7 +467,7 @@ const dislikePlaylist = async (req, res) => {
     });
   }
 
-  const playlist = await Playlist.findById(id);
+  let playlist = await Playlist.findById(id).populate("user");
 
   if (!playlist) {
     return res
@@ -489,9 +484,9 @@ const dislikePlaylist = async (req, res) => {
   const cl = await User.findById(req.userId);
 
   !playlist.dislikes.includes(cl) && playlist.dislikes.push(cl);
-  playlist.likes = playlist.likes.filter((x) => x === cl._id);
+  playlist.likes = playlist.likes.filter((x) => !x.equals(cl._id));
 
-  await playlist.save();
+  playlist = await playlist.save();
   const {
     likes,
     dislikes,
@@ -512,10 +507,9 @@ const dislikePlaylist = async (req, res) => {
       publishDate,
       listens,
       isPublished,
-      hasLiked: likes.includes(req.userId),
-      hasDisliked: dislikes.includes(req.userId),
-      firstName: user.firstName,
-      lastName: user.lastName,
+      hasLiked: likes.some((x) => x.equals(cl._id)),
+      hasDisliked: dislikes.some((x) => x.equals(cl._id)),
+      username: user.username,
     },
   });
 };
@@ -530,7 +524,7 @@ const listen = async (req, res) => {
     });
   }
 
-  const playlist = await Playlist.findById(id);
+  let playlist = await Playlist.findById(id);
 
   if (!playlist) {
     return res
@@ -546,7 +540,7 @@ const listen = async (req, res) => {
 
   playlist.listens++;
 
-  await playlist.save();
+  playlist = await playlist.save();
 
   const {
     likes,
@@ -568,10 +562,9 @@ const listen = async (req, res) => {
       publishDate,
       listens,
       isPublished,
-      hasLiked: likes.includes(req.userId),
-      hasDisliked: dislikes.includes(req.userId),
-      firstName: user.firstName,
-      lastName: user.lastName,
+      hasLiked: likes.some((x) => x.equals(req.userId)),
+      hasDisliked: dislikes.some(x.equals(req.userId)),
+      username: user.username,
     },
   });
 };

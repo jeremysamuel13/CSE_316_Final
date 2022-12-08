@@ -426,16 +426,12 @@ function GlobalStoreContextProvider(props) {
     store.closeCurrentList(fromURL);
     async function asyncSetCurrentList(id) {
       let response = await api.getPlaylistById(id);
-      if (response.data.success) {
-        let playlist = response.data.playlist;
 
-        response = await api.updatePlaylistById(playlist._id, playlist);
-        if (response.data.success) {
-          storeReducer({
-            type: GlobalStoreActionType.SET_CURRENT_LIST,
-            payload: playlist,
-          });
-        }
+      if (response.data.success) {
+        storeReducer({
+          type: GlobalStoreActionType.SET_CURRENT_LIST,
+          payload: response.data.playlist,
+        });
       }
     }
     asyncSetCurrentList(id);
@@ -696,6 +692,7 @@ function GlobalStoreContextProvider(props) {
 
   store.likePlaylist = async (id) => {
     const res = await api.like(id);
+    console.log(res);
     if (!res.data?.success) {
       return false;
     }
@@ -725,7 +722,7 @@ function GlobalStoreContextProvider(props) {
 
     if (store.search.trim().length > 0) {
       res = res?.filter((val) =>
-        key(val).toLowerCase().includes(store.search.toLowerCase())
+        key(val)?.toLowerCase().includes(store.search.toLowerCase())
       );
     }
 

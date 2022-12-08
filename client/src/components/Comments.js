@@ -20,7 +20,7 @@ const CommentCard = ({ comment }) => {
     <Card sx={{ margin: "2%" }}>
       <CardContent>
         <Typography variant="overline">
-          <b>{`${comment?.user?.firstName} ${comment?.user?.lastName}`}</b>
+          <b>{comment?.user?.username}</b>
         </Typography>
         <Typography variant="body2">{comment.comment}</Typography>
       </CardContent>

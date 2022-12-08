@@ -85,7 +85,7 @@ const PublishedListCard = (props) => {
           <Stack>
             <Typography variant="h6">{playlist.name}</Typography>
             <Typography variant="caption">
-              <b>By:</b> {`${playlist.firstName} ${playlist.lastName}`}
+              <b>By:</b> {playlist.username}
             </Typography>
             <Stack direction="row" spacing={3}>
               <Typography variant="caption">

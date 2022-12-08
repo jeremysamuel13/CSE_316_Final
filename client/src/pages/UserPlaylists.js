@@ -21,10 +21,7 @@ const UserPlaylists = () => {
     }
   }, []);
 
-  const lists = store.getFilteredPlaylist(
-    "published",
-    (val) => `${val.firstName} ${val.lastName}`
-  );
+  const lists = store.getFilteredPlaylist("published", (val) => val.username);
 
   return (
     <Stack>

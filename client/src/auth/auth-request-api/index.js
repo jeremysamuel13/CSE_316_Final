@@ -37,7 +37,8 @@ export const registerUser = (
   lastName,
   email,
   password,
-  passwordVerify
+  passwordVerify,
+  username
 ) => {
   return api.post(`/register/`, {
     firstName: firstName,
@@ -45,6 +46,7 @@ export const registerUser = (
     email: email,
     password: password,
     passwordVerify: passwordVerify,
+    username: username,
   });
 };
 const apis = {
