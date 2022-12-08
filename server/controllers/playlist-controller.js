@@ -144,14 +144,16 @@ getPlaylistPairs = async (req, res) => {
                   publishDate: list.publishDate,
                   listens: list.listens,
                   isPublished: list.isPublished,
-                  firstName: list.user.firstName,
-                  lastName: list.user.lastName,
+                  firstName: user.firstName,
+                  lastName: user.lastName,
                   hasLiked: list.likes.includes(req.userId),
                   hasDisliked: list.dislikes.includes(req.userId),
                 }
               : {
                   _id: list._id,
                   name: list.name,
+                  firstName: user.firstName,
+                  lastName: user.lastName,
                 };
             pairs.push(pair);
           }

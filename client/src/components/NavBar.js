@@ -18,6 +18,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { styled, alpha } from "@mui/material/styles";
 import SortIcon from "@mui/icons-material/Sort";
 import { useHistory } from "react-router-dom";
+import { Stack } from "@mui/system";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -39,7 +40,6 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
   height: "100%",
   position: "absolute",
-  pointerEvents: "none",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -64,6 +64,8 @@ const NavBar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const history = useHistory();
 
+  const [search, setSearch] = useState("");
+
   const onSelect = (event) => {
     store.sort(event.target.attributes.sort.value);
     setAnchorEl(null);
@@ -73,27 +75,33 @@ const NavBar = () => {
     <AppBar position="static" sx={{ margin: "3px 5px" }}>
       <Toolbar>
         <Box>
-          <IconButton onClick={() => history.push("/")}>
+          <IconButton onClick={() => history.push("/home")}>
             <HomeIcon />
           </IconButton>
-          <IconButton onClick={() => history.push("/published")}>
+          <IconButton onClick={() => history.push("/all")}>
             <PeopleAltIcon />
           </IconButton>
-          <IconButton onClick={() => history.push("/playlists")}>
+          <IconButton onClick={() => history.push("/user")}>
             <Person4Icon />
           </IconButton>
         </Box>
-        <Box>
+        <Stack direction="row">
           <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
             <StyledInputBase
               placeholder="Search…"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  store.setSearch(search);
+                }
+              }}
+              onChange={(e) => setSearch(e.target.value)}
               inputProps={{ "aria-label": "search" }}
             />
           </Search>
-        </Box>
+          <IconButton onClick={(e) => store.setSearch(search)}>
+            <SearchIcon />
+          </IconButton>
+        </Stack>
         <Box sx={{ flexGrow: 1 }} />
         <Box>
           <Button onClick={(event) => setAnchorEl(event.target)}>

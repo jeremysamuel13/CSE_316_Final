@@ -37,6 +37,7 @@ export const GlobalStoreActionType = {
   SET_PUBLISHED: "SET_PUBLISHED",
   DUPLICATE_PLAYLIST: "DUPLICATE_PLAYLIST",
   SYNC_LOCAL_CHANGE: "SYNC_LOCAL_CHANGE",
+  SET_SEARCH: "SET_SEARCH",
 };
 
 export const SortType = {
@@ -73,6 +74,7 @@ function GlobalStoreContextProvider(props) {
     listMarkedForDeletion: null,
     publishedPlaylists: [],
     published: false,
+    search: "",
   });
   const history = useHistory();
 
@@ -243,6 +245,9 @@ function GlobalStoreContextProvider(props) {
       case GlobalStoreActionType.SYNC_LOCAL_CHANGE: {
         return setStore((st) => ({ ...st }));
       }
+      case GlobalStoreActionType.SET_SEARCH: {
+        return setStore((st) => ({ ...st, search: payload }));
+      }
       default:
         return store;
     }
@@ -328,20 +333,17 @@ function GlobalStoreContextProvider(props) {
   };
 
   // THIS FUNCTION LOADS ALL THE ID, NAME PAIRS SO WE CAN LIST ALL THE LISTS
-  store.loadIdNamePairs = function () {
-    async function asyncLoadIdNamePairs() {
-      const response = await api.getPlaylistPairs();
-      if (response.data.success) {
-        let pairsArray = response.data.idNamePairs;
-        storeReducer({
-          type: GlobalStoreActionType.LOAD_ID_NAME_PAIRS,
-          payload: pairsArray,
-        });
-      } else {
-        console.log("API FAILED TO GET THE LIST PAIRS");
-      }
+  store.loadIdNamePairs = async function () {
+    const response = await api.getPlaylistPairs();
+    if (response.data.success) {
+      let pairsArray = response.data.idNamePairs;
+      storeReducer({
+        type: GlobalStoreActionType.LOAD_ID_NAME_PAIRS,
+        payload: pairsArray,
+      });
+    } else {
+      console.log("API FAILED TO GET THE LIST PAIRS");
     }
-    asyncLoadIdNamePairs();
   };
 
   // THE FOLLOWING 5 FUNCTIONS ARE FOR COORDINATING THE DELETION
@@ -709,6 +711,32 @@ function GlobalStoreContextProvider(props) {
   store.addComment = async (id, comment) => {
     const res = await api.comment(id, comment);
     return res.data?.data;
+  };
+
+  store.getFilteredPlaylist = (listType, key) => {
+    let res;
+    if (listType === "user") {
+      res = store.idNamePairs;
+    } else if (listType === "published") {
+      res = store.publishedPlaylists;
+    } else {
+      console.log("INVALID FILTER LIST TYPE");
+    }
+
+    if (store.search.trim().length > 0) {
+      res = res?.filter((val) =>
+        key(val).toLowerCase().includes(store.search.toLowerCase())
+      );
+    }
+
+    return res;
+  };
+
+  store.setSearch = (search) => {
+    storeReducer({
+      type: GlobalStoreActionType.SET_SEARCH,
+      payload: search,
+    });
   };
 
   return (

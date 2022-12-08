@@ -12,6 +12,7 @@ import {
   LoginScreen,
   RegisterScreen,
   PublishedPlaylists,
+  Home,
 } from "../pages";
 
 const PATHS = [
@@ -22,13 +23,19 @@ const PATHS = [
     withSidePanel: false,
   },
   {
-    path: "/playlists/",
-    component: <UserPlaylists />,
+    path: "/home",
+    component: <Home />,
     allowGuest: false,
     withSidePanel: true,
   },
   {
-    path: "/published/",
+    path: "/user/",
+    component: <UserPlaylists />,
+    allowGuest: true,
+    withSidePanel: true,
+  },
+  {
+    path: "/all/",
     component: <PublishedPlaylists />,
     allowGuest: true,
     withSidePanel: true,

@@ -84,12 +84,15 @@ const PublishedListCard = (props) => {
         <Box sx={{ p: 1, flexGrow: 1 }}>
           <Stack>
             <Typography variant="h6">{playlist.name}</Typography>
+            <Typography variant="caption">
+              <b>By:</b> {`${playlist.firstName} ${playlist.lastName}`}
+            </Typography>
             <Stack direction="row" spacing={3}>
-              <Typography>
+              <Typography variant="caption">
                 <b>Published:</b>
                 {new Date(playlist.publishDate).toLocaleDateString("en-US")}
               </Typography>
-              <Typography>
+              <Typography variant="caption">
                 <b>Listens:</b>
                 {playlist.listens}
               </Typography>

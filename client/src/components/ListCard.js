@@ -10,6 +10,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Stack,
   Typography,
 } from "@mui/material";
 import WorkspaceScreen from "./WorkspaceScreen";
@@ -28,8 +29,6 @@ function ListCard(props) {
   const [editActive, setEditActive] = useState(false);
   const [text, setText] = useState("");
   const { idNamePair, expanded } = props;
-
-  const isPublished = idNamePair.isPublished;
 
   function handleToggleEdit(event) {
     event.stopPropagation();
@@ -97,12 +96,18 @@ function ListCard(props) {
       />
     );
   }
+
+  console.log(idNamePair);
   return (
     <Accordion expanded={expanded} sx={{ margin: "2% 0%" }}>
       <AccordionSummary>
         <Box sx={{ p: 1, flexGrow: 1 }}>
-          <Typography variant="h6">{idNamePair.name}</Typography>
-          {isPublished && <Typography>Published!!</Typography>}
+          <Stack>
+            <Typography variant="h6">{idNamePair.name}</Typography>
+            <Typography variant="caption">
+              <b>By:</b> {`${idNamePair.firstName} ${idNamePair.lastName}`}
+            </Typography>
+          </Stack>
         </Box>
         <Box sx={{ p: 1 }}>
           <IconButton onClick={handleToggleEdit} aria-label="edit">
