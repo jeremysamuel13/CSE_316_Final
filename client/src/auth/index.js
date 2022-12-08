@@ -120,12 +120,6 @@ function AuthContextProvider(props) {
       username
     );
     if (response.status === 200) {
-      authReducer({
-        type: AuthActionType.REGISTER_USER,
-        payload: {
-          user: response.data.user,
-        },
-      });
       history.push("/");
     } else if (response.data?.errorMessage) {
       auth.setError(AuthActionType.REGISTER_USER, response.data.errorMessage);
